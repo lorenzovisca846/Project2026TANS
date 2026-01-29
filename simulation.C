@@ -13,7 +13,7 @@
 
 using namespace std;
 
-void simulation(bool msEnabled, double seed=0, double Nevents = 1000, double multMax = 80, double multMin = 20)
+void simulation(double seed=0, double Nevents = 1000, bool msEnabled, double multMax = 80, double multMin = 20)
 {
     delete gRandom;
     SimRandom *simrand = new SimRandom(seed);
@@ -26,9 +26,9 @@ void simulation(bool msEnabled, double seed=0, double Nevents = 1000, double mul
     double l1R = 4.0, l1L = 27.0, l1W = 0.02;
     double l2R = 7.0, l2L = 27.0;
 
-    Cylinder beamPipe(bpR, bpL, bpW, "Be", msEnabled);
-    Cylinder Layer1(l1R, l1L, l1W, "Si", msEnabled);
-    Cylinder Layer2(l2R, l2L, 0., "Si", false);            // No need to calculate MS for the outer layer
+    Cylinder beamPipe(bpR, bpL, bpW, "Be");
+    Cylinder Layer1(l1R, l1L, l1W, "Si");
+    Cylinder Layer2(l2R, l2L, 0., "Si");            // No need to calculate MS for the outer layer
 
     typedef struct{
         Point VTXcoord;
