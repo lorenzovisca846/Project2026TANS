@@ -14,7 +14,7 @@ class Cylinder : public TObject
 {
 public:
     Cylinder();
-    Cylinder(const double& R, const double& L, const double& W, string Material, const bool& msEnabled);
+    Cylinder(const double& R, const double& L, const double& W, string Material);
 
     ~Cylinder();
 
@@ -28,7 +28,6 @@ private:
     double fL;                  // length (cm)
     double fW;                  // width (cm) 
     double fMsCoefficient;      // multiple scattering coefficient (GeV/c)
-    bool fMsEnabled;
 
 ClassDef(Cylinder,1)
 };

@@ -1,13 +1,24 @@
+#include <Riostream.h>
+#include <TRandom3.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TBranch.h>
+#include <TClonesArray.h>
+#include <TH1F.h>
+#include <TStopwatch.h>
+
 #include "classes/Cylinder.h"
 #include "classes/Point.h"
 #include "classes/SimRandom.h"
 
-#include <TRandom3.h>
-
 using namespace std;
 
-void simulation(bool msEnabled, double seed=0, double multMax = 80, double multMin = 20)
+void simulation(bool msEnabled, double seed=0, double Nevents = 1000, double multMax = 80, double multMin = 20)
 {
+    delete gRandom;
+    SimRandom *simrand = new SimRandom(seed);
+    gRandom = simrand;
+
     double vtxXYsigma = 0.01;
     double vtxZsigma = 5.3;
 
@@ -20,19 +31,60 @@ void simulation(bool msEnabled, double seed=0, double multMax = 80, double multM
     Cylinder Layer2(l2R, l2L, 0., "Si", false);            // No need to calculate MS for the outer layer
 
     typedef struct{
-    Point VTXcoord;
-    int mult;} VTX;
-
-    delete gRandom;
-    SimRandom *simrand = new SimRandom(seed);
-    gRandom = simrand;
-
-    //============= VERTEX GENERATION =============//
-
+        Point VTXcoord;
+        int mult;} VTX;
     VTX vertex;
 
-    vertex.mult = simrand->VMult1(multMin, multMax);
-    vertex.VTXcoord = simrand->GausPoint(vtxXYsigma, vtxZsigma);
+    /*
+    ============================================================
+        APRIRE FILE E ISTOGRAMMI PER DISTRIBUZIONI MULT, ETA
+    ============================================================
+    */
 
-    // WIP
+    /*
+    ============================================================
+        INSERIRE DICHIARAZIONE DEL TREE E DELLE BRANCHES
+    ============================================================
+    */
+
+
+    for(unsigned int i=0; i<Nevents; i++)
+    {
+        /*
+        =================================
+                VERTEX GENERATION
+        =================================
+        */
+
+        vertex.mult = simrand->VMult1(multMin, multMax);
+        vertex.VTXcoord = simrand->GausPoint(vtxXYsigma, vtxZsigma);
+
+        for(unsigned int j=0; j<vertex.mult; j++)
+        {
+            /*
+            ============================
+                PARTICLE PROPAGATION
+            ============================
+            */
+        }
+
+        /*
+        ========================
+            NOISE GENERATION
+        ========================
+        */
+
+
+        /*
+        ======================================================
+            FILLING THE TREE WITH VERTEX, HITS L1, HITS L2
+        ======================================================
+        */
+    }
+
+    /*
+    =====================================
+        CLEANING UP AND CLOSING FILES
+    =====================================
+    */
 }
