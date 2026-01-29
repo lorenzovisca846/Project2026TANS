@@ -13,7 +13,7 @@ Cylinder::Cylinder():TObject(),
     // Default constructor
 }
 
-Cylinder::Cylinder(double R, double L, double W, string Material, bool msEnabled):TObject(),
+Cylinder::Cylinder(const double& R, const double& L, const double& W, string Material, const bool& msEnabled):TObject(),
     fR(R),
     fL(L),
     fW(W),

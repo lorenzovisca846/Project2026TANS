@@ -14,9 +14,8 @@ class Cylinder : public TObject
 {
 public:
     Cylinder();
-    Cylinder(double R, double L, double W, string Material, bool msEnabled);
+    Cylinder(const double& R, const double& L, const double& W, string Material, const bool& msEnabled);
 
-    //Se decidiamo di ereditare da Cylinder con beampipe e layer va messo virtual
     ~Cylinder();
 
     double GetR() const { return fR;}
