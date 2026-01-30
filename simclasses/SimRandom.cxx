@@ -65,3 +65,18 @@ double SimRandom::ScatterDist(double p, double beta, double len)
     double theta0 = (0.0136/(beta*p)) * sqrt(len) * (1. + 0.038*log(len));
     return Gaus(0., theta0);
 }
+
+int SimRandom::RateDist1(double rate, int max)
+{
+    int result;
+    do
+    {
+        result = Poisson(rate);
+    } while (result>max);
+    return result;
+}
+
+int SimRandom::RateDist2(int max)
+{
+    return Integer(max + 1);
+}

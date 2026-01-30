@@ -23,6 +23,10 @@ class SimRandom : public TRandom3 {
         double ThetaDist();
         double ScatterDist(double p, double beta, double len);
 
+        int RateDist1(double rate, int max);
+        int RateDist2(int max);
+        double ZDist(const double& zLen) {return (Rndm()-0.5)*zLen;}
+
     private:
     unsigned int fSeed;
     TH1F* fMultHist;

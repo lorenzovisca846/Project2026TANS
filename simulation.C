@@ -11,20 +11,40 @@
 #include "simclasses/SimRandom.h"
 #include "simclasses/Particle.h"
 
-//Nota: cambiare questi define con una funzione apposita che linka la funzione chiamata ai puntatori, l'abbiamo fatto a lezione
-#define MULT_METHOD 1
-#define VTX_METHOD 1
-
 using namespace std;
 
-void Transport(Particle* part, Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled);
+/*
+====================================================================================
+POSSIBILI SCELTE PER LA GENERAZIONE CASUALE:
+
+1) Molteplicità:
+    - fissa
+    - uniforme
+    - da istogramma
+2) Vertice:
+    - gaussiana xyz
+    - fissa (nell'origine)
+    - gaussiana xy e uniforme z
+3) Pseudorapidità:
+    - da istogramma
+4) Rumore:
+    - poissoniano
+    - uniforme
+
+====================================================================================
+*/
+
+void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled);
+void Noise(const int& noiseMax, const double& noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
 
 void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
 {
+    //================================= Config parameters =================================
     const int multMax = 80;
     const int multMin = 20;
+    const int noiseMax = 20;
+    const double noiseRate = 5.;
 
-    const int noiseMax = 20;                        // max noise hits per layer
 
     const double vtxXYsigma = 0.01;
     const double vtxZsigma = 5.3;
@@ -42,12 +62,7 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
         int mult;} VTX;
     static VTX vertex;
 
-    /*
-    =============================================
-            INPUT FILE WITH DISTRIBUTIONS
-    =============================================
-    */
-
+    //================================= Input file for distributions =================================
     TFile *inputFile = new TFile("inputDistributions.root","READ");
     TH1F *multHist= (TH1F*)inputFile->Get("multHist"); 
     TH1F *etaHist= (TH1F*)inputFile->Get("etaHist"); 
@@ -59,12 +74,7 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
     inputFile->Close();
     delete inputFile;
 
-    /*
-    ====================================================
-            DECLARATION OF OUTPUT FILE AND TTREE
-    ====================================================
-    */
-
+    //================================= Output file and tree =================================
     TFile hfile("htree.root","RECREATE");
     TTree *tree = new TTree("Tree","Vertex-Hits TTree");
 
@@ -80,47 +90,33 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
     tree->Branch("Hits_L1",&ptrhits1);
     tree->Branch("Hits_L2",&ptrhits2);
 
+    //================================= Event loop =================================
+
+    Particle *ptrPart = new Particle(simrand);
+    int counter1, counter2;
+
     TStopwatch timer;
     timer.Start();
 
-    Particle *ptrPart = new Particle(simrand);
-
-    int counter1, counter2;
-
     for(unsigned int i=0; i<Nevents; i++)
     {
-        /*
-        =================================
-                VERTEX GENERATION
-        =================================
-        */
+        //================================= Vertex generation =================================
 
-        #if MULT_METHOD==1
-            vertex.mult = multMax;
-        #elif MULT_METHOD==2
-            vertex.mult = simrand->VMult1(multMin, multMax);
-        #else
-            do{vertex.mult = simrand->VMult2(multMin, multMax);} while(vertex.mult < multMin || vertex.mult > multMax);
-        #endif
+        
+        vertex.mult = simrand->VMult1(multMin, multMax);
+        //vertex.mult = multMax;
+        //do{vertex.mult = simrand->VMult2(multMin, multMax);} while(vertex.mult < multMin || vertex.mult > multMax);
 
-        #if VTX_METHOD==1
-            simrand->GausPoint(vertex.X, vertex.Y, vertex.Z, vtxXYsigma, vtxZsigma);
-        #elif VTX_METHOD==2
-            simrand->OriginPoint(vertex.X, vertex.Y, vertex.Z);
-        #else
-            simrand->UnifPoint(vertex.X, vertex.Y, vertex.Z, vtxXYsigma, vtxZsigma);
-        #endif
+        simrand->GausPoint(vertex.X, vertex.Y, vertex.Z, vtxXYsigma, vtxZsigma);
+        //simrand->OriginPoint(vertex.X, vertex.Y, vertex.Z);
+        //simrand->UnifPoint(vertex.X, vertex.Y, vertex.Z, vtxXYsigma, vtxZsigma);
 
         counter1 = 0;
         counter2 = 0;
 
         for(unsigned int j=0; j<vertex.mult; j++)
         {
-            /*
-            ====================================
-                    PARTICLE PROPAGATION
-            ====================================
-            */
+            //================================= Particle propagation =================================
 
             ptrPart->Init(vertex.X, vertex.Y, vertex.Z, 1.0, 0.7);
 
@@ -129,22 +125,12 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
             Transport(ptrPart, Layer2, hits2, counter2, true, false);
         }
 
-        /*
-        ========================
-            NOISE GENERATION
+        //================================= Noise generation =================================
 
-                WIPs
-        ========================
-        */
+        Noise(noiseMax, noiseRate, Layer1, hits1, counter1, simrand);
+        Noise(noiseMax, noiseRate, Layer2, hits2, counter2, simrand);
 
-
-        /*
-        ======================================================
-            FILLING THE TREE WITH VERTEX, HITS L1, HITS L2
-    
-                            WIP
-        ======================================================
-        */
+        //================================= Tree fill =================================
 
         tree->Fill();
         ptrhits1->Clear();
@@ -154,24 +140,16 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
     timer.Stop(); 
     timer.Print();
 
-    /*
-    =====================================
-        CLEANING UP AND CLOSING FILES
-
-                    WIP
-    =====================================
-    */
-
+    //================================= Cleanup =================================
 
     hfile.Write();
     hfile.Close();
-    delete simrand;
     delete ptrhits1;
     delete ptrhits2;
 
 }
 
-void Transport(Particle* part, Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled)
+void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled)
 {
     part->Propagation(layer.GetR());
 
@@ -186,5 +164,23 @@ void Transport(Particle* part, Cylinder& layer, TClonesArray& hits, int& counter
         if(msEnabled) //Check if sqrt2 missing, implement angle of incidence thickness correction
             part->MultScatter(layer.GetX0(), layer.GetW(), layer.GetR());
     
+    }
+}
+
+void Noise(const int& noiseMax, const double& noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand)
+{
+    int nNoise = simrand->RateDist1(noiseRate, noiseMax);       //poisson
+    //int nNoise = simrand->RateDist2(noiseMax);                //unif
+
+    for(int i=0;i<nNoise;i++)
+    {
+        double phiNoise = simrand->PhiDist();
+        double zNoise = simrand->ZDist(layer.GetL());
+
+        double xNoise = layer.GetR() * cos(phiNoise);
+        double yNoise = layer.GetR() * sin(phiNoise);
+
+        new(hits[counter])Point(xNoise, yNoise, zNoise);
+        counter++;
     }
 }
