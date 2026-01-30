@@ -4,4 +4,6 @@ bozze/
 *.so
 *.d
 *.pcm
-*.root
+*/htree.root
+
+distCreator.C
