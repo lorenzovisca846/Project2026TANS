@@ -1,2 +1,6 @@
 .vscode/
 bozze/
+
+*.so
+*.d
+*.pcm
