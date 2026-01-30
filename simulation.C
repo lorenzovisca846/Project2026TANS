@@ -7,9 +7,9 @@
 #include <TH1F.h>
 #include <TStopwatch.h>
 
-#include "classes/Cylinder.h"
-#include "classes/SimRandom.h"
-#include "classes/Particle.h"
+#include "simclasses/Cylinder.h"
+#include "simclasses/SimRandom.h"
+#include "simclasses/Particle.h"
 
 //Nota: cambiare questi define con una funzione apposita che linka la funzione chiamata ai puntatori, l'abbiamo fatto a lezione
 #define MULT_METHOD 1
@@ -17,7 +17,7 @@
 
 using namespace std;
 
-void Transport(Particle* part, Cylinder& layer, TClonesArray& hits, bool detector, bool msEnabled);
+void Transport(Particle* part, Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled);
 
 void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
 {
@@ -35,7 +35,7 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
 
     Cylinder beamPipe(bpR, bpL, bpW, "Be");
     Cylinder Layer1(l1R, l1L, l1W, "Si");
-    Cylinder Layer2(l2R, l2L, 0., "Si");            // No need to calculate MS for the outer layer
+    Cylinder Layer2(l2R, l2L, 0., "Si");
 
     typedef struct{
         double X, Y, Z;
@@ -43,11 +43,9 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
     static VTX vertex;
 
     /*
-    ============================================================
-                  INPUT FILE WITH DISTRIBUTIONS
-
-                  WIP (file does not exist yet)
-    ============================================================
+    =============================================
+            INPUT FILE WITH DISTRIBUTIONS
+    =============================================
     */
 
     TFile *inputFile = new TFile("inputDistributions.root","READ");
@@ -70,7 +68,7 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
     TFile hfile("htree.root","RECREATE");
     TTree *tree = new TTree("Tree","Vertex-Hits TTree");
 
-    int arrdim = Nevents * (multMax + noiseMax + 5);            //5 as safety margin
+    int arrdim = Nevents * (multMax + noiseMax + 5);
 
     TClonesArray *ptrhits1 = new TClonesArray("Point",arrdim);
     TClonesArray &hits1 = *ptrhits1;
@@ -86,6 +84,8 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
     timer.Start();
 
     Particle *ptrPart = new Particle(simrand);
+
+    int counter1, counter2;
 
     for(unsigned int i=0; i<Nevents; i++)
     {
@@ -111,27 +111,29 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
             simrand->UnifPoint(vertex.X, vertex.Y, vertex.Z, vtxXYsigma, vtxZsigma);
         #endif
 
+        counter1 = 0;
+        counter2 = 0;
+
         for(unsigned int j=0; j<vertex.mult; j++)
         {
             /*
-            ============================
-                PARTICLE PROPAGATION
-
-                        WIP
-            ============================
+            ====================================
+                    PARTICLE PROPAGATION
+            ====================================
             */
 
-            ptrPart->Init(vertex.X, vertex.Y, vertex.Z, 1.0, 0.8, 1); // beta=1, p=0.8GeV/c, Q=1e
-            Transport(ptrPart, beamPipe, hits1, false, msEnabled);
-            Transport(ptrPart, Layer1, hits1, true, msEnabled);
-            Transport(ptrPart, Layer2, hits2, true, false);
+            ptrPart->Init(vertex.X, vertex.Y, vertex.Z, 1.0, 0.7);
+
+            Transport(ptrPart, beamPipe, hits1, counter1, false, msEnabled);
+            Transport(ptrPart, Layer1, hits1, counter1, true, msEnabled);
+            Transport(ptrPart, Layer2, hits2, counter2, true, false);
         }
 
         /*
         ========================
             NOISE GENERATION
 
-                WIP
+                WIPs
         ========================
         */
 
@@ -169,11 +171,20 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
 
 }
 
-void Transport(Particle* part, Cylinder& layer, TClonesArray& hits, bool detector, bool msEnabled)
+void Transport(Particle* part, Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled)
 {
-    // WIP
-    // 1) Chiamare la funzione di propagazione della particella fino al raggio interno del layer (da scrivere)
-    // 2) Verificare se la particella interseca il layer
-    // 3) Se è in accettanza e il layer è un rivelatore, salvare la hit nel TClonesArray. Capire se in cartesiane o cilindriche
-    // 4) Se è in accettanza e il MS è acceso, chiamare la funzione di ms della particella (da scrivere)
+    part->Propagation(layer.GetR());
+
+    if(fabs(part->GetZ()) < layer.GetL()/2.)
+    {
+        if(detector)
+        {
+            new(hits[counter])Point(part->GetPoint());
+            counter++;
+        }
+
+        if(msEnabled) //Check if sqrt2 missing, implement angle of incidence thickness correction
+            part->MultScatter(layer.GetX0(), layer.GetW(), layer.GetR());
+    
+    }
 }

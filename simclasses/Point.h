@@ -9,12 +9,18 @@ class Point : public TObject
     Point();
     Point(const double& X,const double& Y,const double& Z);
 
+    double GetX() const {return fX;}
+    double GetY() const {return fY;}
     double GetZ() const {return fZ;}
+
     double GetR() const {return fR;}
     double GetPhi() const {return fPhi;}
 
     private:
+        double fX;
+        double fY;
         double fZ;
+
         double fR;
         double fPhi;
 

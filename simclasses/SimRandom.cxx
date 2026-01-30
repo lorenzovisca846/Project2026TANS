@@ -59,3 +59,9 @@ double SimRandom::ThetaDist()
     double eta = fEtaHist->GetRandom();
     return 2.*atan(exp(-eta));
 }
+
+double SimRandom::ScatterDist(double p, double beta, double len)
+{
+    double theta0 = (0.0136/(beta*p)) * sqrt(len) * (1. + 0.038*log(len));
+    return Gaus(0., theta0);
+}

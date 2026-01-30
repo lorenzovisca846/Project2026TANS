@@ -21,6 +21,7 @@ class SimRandom : public TRandom3 {
 
         double PhiDist() {return Rndm()*2.*TMath::Pi();}
         double ThetaDist();
+        double ScatterDist(double p, double beta, double len);
 
     private:
     unsigned int fSeed;
