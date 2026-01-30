@@ -8,14 +8,16 @@
 #include <TStopwatch.h>
 
 #include "classes/Cylinder.h"
-#include "classes/Point.h"
 #include "classes/SimRandom.h"
+#include "classes/Particle.h"
 
 //Nota: cambiare questi define con una funzione apposita che linka la funzione chiamata ai puntatori, l'abbiamo fatto a lezione
 #define MULT_METHOD 1
 #define VTX_METHOD 1
 
 using namespace std;
+
+void Transport(Particle* part, Cylinder& layer, TClonesArray& hits, bool detector, bool msEnabled);
 
 void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
 {
@@ -42,11 +44,9 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
 
     /*
     ============================================================
-        APRIRE FILE E ISTOGRAMMI PER DISTRIBUZIONI MULT, ETA
-        Nota: passare subito gli istogrammi a simRandom, in
-        modo da non doverli aprire ad ogni evento
+                  INPUT FILE WITH DISTRIBUTIONS
 
-                            WIP
+                  WIP (file does not exist yet)
     ============================================================
     */
 
@@ -62,12 +62,11 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
     delete inputFile;
 
     /*
-    ============================================================
-        INSERIRE DICHIARAZIONE DEL TREE E DELLE BRANCHES
-
-                            WIP
-    ============================================================
+    ====================================================
+            DECLARATION OF OUTPUT FILE AND TTREE
+    ====================================================
     */
+
     TFile hfile("htree.root","RECREATE");
     TTree *tree = new TTree("Tree","Vertex-Hits TTree");
 
@@ -83,14 +82,16 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
     tree->Branch("Hits_L1",&ptrhits1);
     tree->Branch("Hits_L2",&ptrhits2);
 
+    TStopwatch timer;
+    timer.Start();
+
+    Particle *ptrPart = new Particle(simrand);
 
     for(unsigned int i=0; i<Nevents; i++)
     {
         /*
         =================================
                 VERTEX GENERATION
-
-                    WIP
         =================================
         */
 
@@ -119,6 +120,11 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
                         WIP
             ============================
             */
+
+            ptrPart->Init(vertex.X, vertex.Y, vertex.Z, 1.0, 0.8, 1); // beta=1, p=0.8GeV/c, Q=1e
+            Transport(ptrPart, beamPipe, hits1, false, msEnabled);
+            Transport(ptrPart, Layer1, hits1, true, msEnabled);
+            Transport(ptrPart, Layer2, hits2, true, false);
         }
 
         /*
@@ -143,6 +149,9 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
         ptrhits2->Clear();
     }
 
+    timer.Stop(); 
+    timer.Print();
+
     /*
     =====================================
         CLEANING UP AND CLOSING FILES
@@ -158,4 +167,13 @@ void simulation(double Nevents = 1000, bool msEnabled, unsigned int seed = 0)
     delete ptrhits1;
     delete ptrhits2;
 
+}
+
+void Transport(Particle* part, Cylinder& layer, TClonesArray& hits, bool detector, bool msEnabled)
+{
+    // WIP
+    // 1) Chiamare la funzione di propagazione della particella fino al raggio interno del layer (da scrivere)
+    // 2) Verificare se la particella interseca il layer
+    // 3) Se è in accettanza e il layer è un rivelatore, salvare la hit nel TClonesArray. Capire se in cartesiane o cilindriche
+    // 4) Se è in accettanza e il MS è acceso, chiamare la funzione di ms della particella (da scrivere)
 }

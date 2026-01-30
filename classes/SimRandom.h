@@ -3,7 +3,7 @@
 
 #include <TRandom3.h>
 #include <TH1F.h>
-#include "Point.h"
+#include <TMath.h>
 
 class SimRandom : public TRandom3 {
     public:
@@ -19,7 +19,8 @@ class SimRandom : public TRandom3 {
         void OriginPoint(double&, double&, double&);
         void UnifPoint(double&, double&, double&, double, double);
 
-
+        double PhiDist() {return Rndm()*2.*TMath::Pi();}
+        double ThetaDist();
 
     private:
     unsigned int fSeed;

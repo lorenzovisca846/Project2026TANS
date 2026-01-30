@@ -15,17 +15,11 @@ SimRandom::SimRandom(unsigned int seed, TH1F* multHist, TH1F* etaHist) : TRandom
     fMultHist(nullptr),
     fEtaHist(nullptr)
 {
-    if (multHist)
-    {
-        fMultHist = (TH1F*)multHist->Clone("fMultHist_Sim");
-        fMultHist->SetDirectory(nullptr); 
-    }
-
-    if (etaHist)
-    {
-        fEtaHist = (TH1F*)etaHist->Clone("fEtaHist_Sim");
-        fEtaHist->SetDirectory(nullptr);
-    }
+    fMultHist = (TH1F*)multHist->Clone("fMultHist_Sim");
+    fMultHist->SetDirectory(nullptr);
+    
+    fEtaHist = (TH1F*)etaHist->Clone("fEtaHist_Sim");
+    fEtaHist->SetDirectory(nullptr);
 }
 
 SimRandom::~SimRandom()
@@ -58,4 +52,10 @@ void SimRandom::UnifPoint(double& x, double& y, double& z, double xyS, double zS
     x = Gaus(0., xyS);
     y = Gaus(0., xyS);
     z = -zS + Rndm()*2.*zS;
+}
+
+double SimRandom::ThetaDist()
+{
+    double eta = fEtaHist->GetRandom();
+    return 2.*atan(exp(-eta));
 }

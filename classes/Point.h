@@ -5,23 +5,20 @@
 
 class Point : public TObject
 {
-public:
-Point();
-Point(const double& X,const double& Y,const double& Z);
-Point(const double& R,const double& Z,const double& Phi); 
+    public:
+    Point();
+    Point(const double& X,const double& Y,const double& Z);
 
-virtual ~Point();
+    double GetZ() const {return fZ;}
+    double GetR() const {return fR;}
+    double GetPhi() const {return fPhi;}
 
-double GetZ() const {return fZ;}
-double GetR() const {return fR;}
-double GetPhi() const {return fPhi;}
+    private:
+        double fZ;
+        double fR;
+        double fPhi;
 
-private:
-    double fZ;
-    double fR;
-    double fPhi;
-
-ClassDef(Point,1)
+    ClassDef(Point,1)
 };
 
 
