@@ -51,9 +51,7 @@ void SimRandom::VertUnif(double& x, double& y, double& z, double xyS, double zS)
 
 double SimRandom::ThetaDist()
 {
-    //double eta = fEtaHist->GetRandom();
-    double eta = Gaus(0., 1.0); //TEST
-
+    double eta = fEtaHist->GetRandom();
     return 2.*atan(exp(-eta));
 }
 

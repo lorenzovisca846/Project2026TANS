@@ -24,7 +24,7 @@ POSSIBILI SCELTE PER LA GENERAZIONE CASUALE:
     - VertGaus          gaussiana xyz
 
 2) Molteplicità:
-    - MultFixed         issa (max)
+    - MultFixed         fissa (max)
     - MultHisto         da istogramma
     - MultUnif          uniforme
 
@@ -41,8 +41,8 @@ void Noise(const int& noiseMax, const double& noiseRate, const Cylinder& layer, 
 void simulation(double Nevents = 100, bool msEnabled = false, unsigned int seed = 0)
 {
     //================================= Config parameters =================================
-    int multMax = 40;
-    int multMin = 20;
+    int multMin = 0;
+    int multMax = 60;
     const int noiseMax = 20;
     const double noiseRate = 5.;
 
@@ -63,17 +63,16 @@ void simulation(double Nevents = 100, bool msEnabled = false, unsigned int seed 
     static VTX vertex;
 
     //================================= Input file for distributions =================================
-    //TFile *inputFile = new TFile("inputDistributions.root","READ");
-    //TH1F *multHist= (TH1F*)inputFile->Get("multHist"); 
-    //TH1F *etaHist= (TH1F*)inputFile->Get("etaHist"); 
+    TFile *inputFile = new TFile("inputDistributions.root","READ");
+    TH1F *multHist= (TH1F*)inputFile->Get("multHist"); 
+    TH1F *etaHist= (TH1F*)inputFile->Get("etaHist"); 
 
     delete gRandom;
-    //SimRandom *simrand = new SimRandom(seed, multHist, etaHist);
-    SimRandom *simrand = new SimRandom();
+    SimRandom *simrand = new SimRandom(seed, multHist, etaHist);
     gRandom = simrand;
 
-    //inputFile->Close();
-    //delete inputFile;
+    inputFile->Close();
+    delete inputFile;
 
     //================================= Output file and tree =================================
     TFile hfile("htree.root","RECREATE");
@@ -108,9 +107,9 @@ void simulation(double Nevents = 100, bool msEnabled = false, unsigned int seed 
     {
         //================================= Vertex generation =================================
 
-        if(i%10==0) cout << "Processing event " << i << "/" << Nevents << endl;
+        if(i%1000==0) cout << "Processing event " << i << "/" << Nevents << endl;
         
-        vertex.mult = simrand->MultUnif(multMin, multMax);
+        vertex.mult = simrand->MultHisto(multMin, multMax);
         simrand->VertUnif(vertex.X, vertex.Y, vertex.Z, vtxXYsigma, vtxZsigma);
 
         counter1 = 0;
@@ -166,7 +165,7 @@ void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& c
             counter++;
         }
 
-        if(msEnabled) //implement angle of incidence thickness correction
+        if(msEnabled)
             part->MultScatter(layer.GetX0(), layer.GetW(), layer.GetR());
     
     }
