@@ -148,7 +148,7 @@ void simulation(double Nevents = 10000, bool msEnabled = false, string gentypes 
     for(int i=0; i<Nevents; i++)
     {
         //================================= Vertex generation =================================
-        if(i%1000==0) cout << "Processing event " << i << "/" << Nevents << endl;
+        if(i%10000==0) cout << "Processing event " << i << "/" << Nevents << endl;
         
         vertex.mult = (simrand->*MultGen)(multMin, multMax);
         (simrand->*VertGen)(vertex.X, vertex.Y, vertex.Z, vtxXYsigma, vtxZsigma);
@@ -159,7 +159,7 @@ void simulation(double Nevents = 10000, bool msEnabled = false, string gentypes 
         for(int j=0; j<vertex.mult; j++)
         {
             //================================= Particle propagation =================================
-            ptrPart->Init(vertex.X, vertex.Y, vertex.Z, 1.0, 0.7);
+            ptrPart->Init(vertex.X, vertex.Y, vertex.Z, 1.0, 0.7, j);
 
             Transport(ptrPart, beamPipe, hits1, counter1, false, msEnabled);
             Transport(ptrPart, Layer1, hits1, counter1, true, msEnabled);

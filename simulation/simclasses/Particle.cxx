@@ -2,7 +2,7 @@
 
 ClassImp(Particle)
 
-void Particle::Init(double x, double y, double z, double beta, double p)
+void Particle::Init(double x, double y, double z, double beta, double p, int trackID)
     {
         fX = x;
         fY = y;
@@ -16,6 +16,8 @@ void Particle::Init(double x, double y, double z, double beta, double p)
         fC1 = sin(fTheta) * cos(fPhi);
         fC2 = sin(fTheta) * sin(fPhi);
         fC3 = cos(fTheta);
+
+        ftrackID = trackID;
     }
 
 void Particle::Propagation(double Rext)
