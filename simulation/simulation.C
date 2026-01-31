@@ -19,33 +19,33 @@ using namespace std;
 POSSIBILI SCELTE PER LA GENERAZIONE CASUALE:
 
 1) Vertice:
-    - o          fissa (nell'origine)
-    - u          gaussiana xy e uniforme z
-    - g          gaussiana xyz
+    - o         fissa (nell'origine)
+    - u         gaussiana xy e uniforme z
+    - g         gaussiana xyz
 
 2) Molteplicità:
-    - MultFixed         fissa (max)
-    - MultHisto         da istogramma
-    - MultUnif          uniforme
+    - f         fissa (max)
+    - h         da istogramma
+    - u         uniforme
 
 3) Rumore:
-    - NoisePois         poissoniano
-    - NoiseUnif         uniforme
-
+    - p         poissoniano
+    - u         uniforme
 ====================================================================================
 */
+
 typedef void (SimRandom::*vtxGen)(double&, double&, double&, double, double);
-typedef int  (SimRandom::*mGen)(int&, int&);
-typedef void (*nGen)(const int&, const double&, const Cylinder&, TClonesArray&, int&, SimRandom*);
+typedef int  (SimRandom::*mGen)(int, int);
+typedef void (*nGen)(int, double, const Cylinder&, TClonesArray&, int&, SimRandom*);
 
 void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled);
 
-void NoiseU(const int& noiseMax, const double& noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
-void NoiseP(const int& noiseMax, const double& noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
+void NoiseU(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
+void NoiseP(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
 
-void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, string gentypes);
+void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, const string& gentypes);
 
-void simulation(double Nevents = 100, bool msEnabled = false, string gentypes = "ghp", unsigned int seed = 0)
+void simulation(double Nevents = 10000, bool msEnabled = false, string gentypes = "ghp", unsigned int seed = 0)
 {
     //================================= Config parameters =================================
     int multMin = 0;
@@ -90,7 +90,7 @@ void simulation(double Nevents = 100, bool msEnabled = false, string gentypes = 
     TFile hfile("htree.root","RECREATE");
     TTree *tree = new TTree("Tree","Vertex-Hits TTree");
 
-    int arrdim = Nevents * (multMax + noiseMax + 5);
+    int arrdim = multMax + noiseMax + 5;
 
     TClonesArray *ptrhits1 = new TClonesArray("MyPoint",arrdim);
     TClonesArray &hits1 = *ptrhits1;
@@ -103,7 +103,6 @@ void simulation(double Nevents = 100, bool msEnabled = false, string gentypes = 
     tree->Branch("Hits_L2",&ptrhits2);
 
     //================================= Status print =================================
-
     string Vertexstr = "Gaus (default)";
     if(gentypes.length() > 0)
     {
@@ -140,7 +139,6 @@ void simulation(double Nevents = 100, bool msEnabled = false, string gentypes = 
 
 
     //================================= Event loop =================================
-
     Particle *ptrPart = new Particle(simrand);
     int counter1, counter2;
 
@@ -150,7 +148,6 @@ void simulation(double Nevents = 100, bool msEnabled = false, string gentypes = 
     for(int i=0; i<Nevents; i++)
     {
         //================================= Vertex generation =================================
-
         if(i%1000==0) cout << "Processing event " << i << "/" << Nevents << endl;
         
         vertex.mult = (simrand->*MultGen)(multMin, multMax);
@@ -162,7 +159,6 @@ void simulation(double Nevents = 100, bool msEnabled = false, string gentypes = 
         for(int j=0; j<vertex.mult; j++)
         {
             //================================= Particle propagation =================================
-
             ptrPart->Init(vertex.X, vertex.Y, vertex.Z, 1.0, 0.7);
 
             Transport(ptrPart, beamPipe, hits1, counter1, false, msEnabled);
@@ -171,7 +167,6 @@ void simulation(double Nevents = 100, bool msEnabled = false, string gentypes = 
         }
 
         //================================= Noise generation =================================
-
         if(noiseMax>0)
         {
             NoiseGen(noiseMax, noiseRate, Layer1, hits1, counter1, simrand);
@@ -188,10 +183,12 @@ void simulation(double Nevents = 100, bool msEnabled = false, string gentypes = 
     timer.Stop(); 
     timer.Print();
 
-    //================================= Cleanup =================================
-
     hfile.Write();
     hfile.Close();
+
+    //Check if these are needed
+    delete ptrPart;
+    delete simrand;
     delete ptrhits1;
     delete ptrhits2;
 }
@@ -200,7 +197,7 @@ void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& c
 {
     part->Propagation(layer.GetR());
 
-    if(fabs(part->GetZ()) < layer.GetL()/2.)
+    if(fabs(part->GetZ()) < layer.GetL()*0.5)
     {
         if(detector)
         {
@@ -214,7 +211,7 @@ void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& c
     }
 }
 
-void NoiseU(const int& noiseMax, const double& noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand)
+void NoiseU(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand)
 {
     int nNoise = simrand->NoiseUnif(noiseRate, noiseMax);
 
@@ -231,7 +228,7 @@ void NoiseU(const int& noiseMax, const double& noiseRate, const Cylinder& layer,
     }
 }
 
-void NoiseP(const int& noiseMax, const double& noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand)
+void NoiseP(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand)
 {
     int nNoise = simrand->NoisePois(noiseRate, noiseMax);
 
@@ -248,7 +245,7 @@ void NoiseP(const int& noiseMax, const double& noiseRate, const Cylinder& layer,
     }
 }
 
-void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, string gentypes)
+void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, const string& gentypes)
 {
     char vt = (gentypes.length() > 0) ? gentypes[0] : ' ';
     char mt = (gentypes.length() > 1) ? gentypes[1] : ' ';
