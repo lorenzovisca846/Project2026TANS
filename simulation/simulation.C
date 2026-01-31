@@ -19,9 +19,9 @@ using namespace std;
 POSSIBILI SCELTE PER LA GENERAZIONE CASUALE:
 
 1) Vertice:
-    - VertOrig          fissa (nell'origine)
-    - VertUnif          gaussiana xy e uniforme z
-    - VertGaus          gaussiana xyz
+    - o          fissa (nell'origine)
+    - u          gaussiana xy e uniforme z
+    - g          gaussiana xyz
 
 2) Molteplicità:
     - MultFixed         fissa (max)
@@ -34,11 +34,21 @@ POSSIBILI SCELTE PER LA GENERAZIONE CASUALE:
 
 ====================================================================================
 */
+typedef void (SimRandom::*vtxGen)(double&, double&, double&, double, double);
+typedef int  (SimRandom::*mGen)(int&, int&);
+typedef void (*nGen)(const int&, const double&, const Cylinder&, TClonesArray&, int&, SimRandom*);
 
 void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled);
-void Noise(const int& noiseMax, const double& noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
 
-void simulation(double Nevents = 100, bool msEnabled = false, unsigned int seed = 0)
+void NoiseU(const int& noiseMax, const double& noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
+void NoiseP(const int& noiseMax, const double& noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
+
+void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, char vt, char mt, char nt);
+
+
+TH1D* htest = new TH1D("htest","Test Histogram",21,-0.5,20.5); //TEST
+
+void simulation(double Nevents = 100, bool msEnabled = false, char Vtype = '0', char Mtype = '0', char Ntype = '0', unsigned int seed = 0)
 {
     //================================= Config parameters =================================
     int multMin = 0;
@@ -74,6 +84,11 @@ void simulation(double Nevents = 100, bool msEnabled = false, unsigned int seed 
     inputFile->Close();
     delete inputFile;
 
+    vtxGen VertGen;
+    mGen MultGen;
+    nGen NoiseGen;
+    FunctionAssignment(VertGen, MultGen, NoiseGen, Vtype, Mtype, Ntype);
+
     //================================= Output file and tree =================================
     TFile hfile("htree.root","RECREATE");
     TTree *tree = new TTree("Tree","Vertex-Hits TTree");
@@ -90,32 +105,52 @@ void simulation(double Nevents = 100, bool msEnabled = false, unsigned int seed 
     tree->Branch("Hits_L1",&ptrhits1);
     tree->Branch("Hits_L2",&ptrhits2);
 
-
-    cout << "================================ Simulation parameters =================================" << endl;
-    cout << "Number of events:      " << Nevents << endl;
-    cout << "Multiple scattering:   " << (msEnabled ? "YES" : "NO") << endl;
-
     //================================= Event loop =================================
 
     Particle *ptrPart = new Particle(simrand);
     int counter1, counter2;
 
+    string Vertexstr = "Gaus (default)";
+    if(Vtype=='o' || Vtype=='O') Vertexstr = "Origin";
+    if(Vtype=='u' || Vtype=='U') Vertexstr = "Uniform";
+    if(Vtype=='g' || Vtype=='G') Vertexstr = "Gaus";
+
+    string Multstr = "Histo (default)";
+    if(Mtype=='f' || Mtype=='F') Multstr = "Fixed";
+    if(Mtype=='u' || Mtype=='U') Multstr = "Uniform";
+    if(Mtype=='h' || Mtype=='H') Multstr = "Histo";
+
+    string Noisestr = "Poisson (default)";
+    if(Ntype=='u' || Ntype=='U') Noisestr = "Uniform";
+    if(Ntype=='p' || Ntype=='P') Noisestr = "Poisson";
+    
+
+    cout << "\n";
+    cout << "=============== Simulation parameters ===============" << endl;
+    cout << "  Number of events:         " << Nevents << endl;
+    cout << "  Multiple scattering:      " << (msEnabled ? "YES" : "NO") << endl;
+    cout << "  Vertex generation:        " << Vertexstr << endl;
+    cout << "  Multiplicity generation:  " << Multstr << endl;
+    cout << "  Noise generation:         " << Noisestr << endl;
+    cout << "=====================================================" << endl;
+    cout << "\n";
+
     TStopwatch timer;
     timer.Start();
 
-    for(unsigned int i=0; i<Nevents; i++)
+    for(int i=0; i<Nevents; i++)
     {
         //================================= Vertex generation =================================
 
         if(i%1000==0) cout << "Processing event " << i << "/" << Nevents << endl;
         
-        vertex.mult = simrand->MultHisto(multMin, multMax);
-        simrand->VertUnif(vertex.X, vertex.Y, vertex.Z, vtxXYsigma, vtxZsigma);
+        vertex.mult = (simrand->*MultGen)(multMin, multMax);
+        (simrand->*VertGen)(vertex.X, vertex.Y, vertex.Z, vtxXYsigma, vtxZsigma);
 
         counter1 = 0;
         counter2 = 0;
 
-        for(unsigned int j=0; j<vertex.mult; j++)
+        for(int j=0; j<vertex.mult; j++)
         {
             //================================= Particle propagation =================================
 
@@ -130,8 +165,8 @@ void simulation(double Nevents = 100, bool msEnabled = false, unsigned int seed 
 
         if(noiseMax>0)
         {
-            Noise(noiseMax, noiseRate, Layer1, hits1, counter1, simrand);
-            Noise(noiseMax, noiseRate, Layer2, hits2, counter2, simrand);
+            NoiseGen(noiseMax, noiseRate, Layer1, hits1, counter1, simrand);
+            NoiseGen(noiseMax, noiseRate, Layer2, hits2, counter2, simrand);
         }
 
         //================================= Tree fill =================================
@@ -150,6 +185,8 @@ void simulation(double Nevents = 100, bool msEnabled = false, unsigned int seed 
     hfile.Close();
     delete ptrhits1;
     delete ptrhits2;
+
+    htest->Draw("HIST"); //TEST
 
 }
 
@@ -171,7 +208,25 @@ void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& c
     }
 }
 
-void Noise(const int& noiseMax, const double& noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand)
+void NoiseU(const int& noiseMax, const double& noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand)
+{
+    int nNoise = simrand->NoiseUnif(noiseRate, noiseMax);
+
+    for(int i=0;i<nNoise;i++)
+    {
+        double phiNoise = simrand->PhiDist();
+        double zNoise = simrand->ZDist(layer.GetL());
+
+        double xNoise = layer.GetR() * cos(phiNoise);
+        double yNoise = layer.GetR() * sin(phiNoise);
+
+        new(hits[counter])MyPoint(xNoise, yNoise, zNoise);
+        counter++;
+    }
+    htest->Fill(nNoise); //TEST
+}
+
+void NoiseP(const int& noiseMax, const double& noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand)
 {
     int nNoise = simrand->NoisePois(noiseRate, noiseMax);
 
@@ -185,5 +240,45 @@ void Noise(const int& noiseMax, const double& noiseRate, const Cylinder& layer, 
 
         new(hits[counter])MyPoint(xNoise, yNoise, zNoise);
         counter++;
+    }
+    htest->Fill(nNoise); //TEST
+}
+
+void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, char vt, char mt, char nt)
+{
+    switch(vt)
+    {
+        case 'o':
+            vptr = &SimRandom::VertOrig;
+            break;
+        case 'u':
+            vptr = &SimRandom::VertUnif;
+            break;
+        default:
+            vptr = &SimRandom::VertGaus;
+            break;
+    }
+
+    switch(mt)
+    {
+        case 'f':
+            mptr = &SimRandom::MultFixed;
+            break;
+        case 'u':
+            mptr = &SimRandom::MultUnif;
+            break;
+        default:
+            mptr = &SimRandom::MultHisto;
+            break;
+    }
+
+    switch(nt)
+    {
+        case 'u':
+            nptr = &NoiseU;
+            break;
+        default:
+            nptr = &NoiseP;
+            break;
     }
 }
