@@ -43,12 +43,9 @@ void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& c
 void NoiseU(const int& noiseMax, const double& noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
 void NoiseP(const int& noiseMax, const double& noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
 
-void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, char vt, char mt, char nt);
+void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, string gentypes);
 
-
-TH1D* htest = new TH1D("htest","Test Histogram",21,-0.5,20.5); //TEST
-
-void simulation(double Nevents = 100, bool msEnabled = false, char Vtype = '0', char Mtype = '0', char Ntype = '0', unsigned int seed = 0)
+void simulation(double Nevents = 100, bool msEnabled = false, string gentypes = "ghp", unsigned int seed = 0)
 {
     //================================= Config parameters =================================
     int multMin = 0;
@@ -87,7 +84,7 @@ void simulation(double Nevents = 100, bool msEnabled = false, char Vtype = '0', 
     vtxGen VertGen;
     mGen MultGen;
     nGen NoiseGen;
-    FunctionAssignment(VertGen, MultGen, NoiseGen, Vtype, Mtype, Ntype);
+    FunctionAssignment(VertGen, MultGen, NoiseGen, gentypes);
 
     //================================= Output file and tree =================================
     TFile hfile("htree.root","RECREATE");
@@ -105,24 +102,30 @@ void simulation(double Nevents = 100, bool msEnabled = false, char Vtype = '0', 
     tree->Branch("Hits_L1",&ptrhits1);
     tree->Branch("Hits_L2",&ptrhits2);
 
-    //================================= Event loop =================================
-
-    Particle *ptrPart = new Particle(simrand);
-    int counter1, counter2;
+    //================================= Status print =================================
 
     string Vertexstr = "Gaus (default)";
-    if(Vtype=='o' || Vtype=='O') Vertexstr = "Origin";
-    if(Vtype=='u' || Vtype=='U') Vertexstr = "Uniform";
-    if(Vtype=='g' || Vtype=='G') Vertexstr = "Gaus";
+    if(gentypes.length() > 0)
+    {
+        if(gentypes[0]=='o' || gentypes[0]=='O') Vertexstr = "Origin";
+        if(gentypes[0]=='u' || gentypes[0]=='U') Vertexstr = "Uniform";
+        if(gentypes[0]=='g' || gentypes[0]=='G') Vertexstr = "Gaus";
+    }
 
     string Multstr = "Histo (default)";
-    if(Mtype=='f' || Mtype=='F') Multstr = "Fixed";
-    if(Mtype=='u' || Mtype=='U') Multstr = "Uniform";
-    if(Mtype=='h' || Mtype=='H') Multstr = "Histo";
+    if(gentypes.length() > 1)
+    {
+        if(gentypes[1]=='f' || gentypes[1]=='F') Multstr = "Fixed";
+        if(gentypes[1]=='u' || gentypes[1]=='U') Multstr = "Uniform";
+        if(gentypes[1]=='h' || gentypes[1]=='H') Multstr = "Histo";
+    }
 
     string Noisestr = "Poisson (default)";
-    if(Ntype=='u' || Ntype=='U') Noisestr = "Uniform";
-    if(Ntype=='p' || Ntype=='P') Noisestr = "Poisson";
+    if(gentypes.length() > 2)
+    {
+        if(gentypes[2]=='u' || gentypes[2]=='U') Noisestr = "Uniform";
+        if(gentypes[2]=='p' || gentypes[2]=='P') Noisestr = "Poisson";
+    }
     
 
     cout << "\n";
@@ -134,6 +137,12 @@ void simulation(double Nevents = 100, bool msEnabled = false, char Vtype = '0', 
     cout << "  Noise generation:         " << Noisestr << endl;
     cout << "=====================================================" << endl;
     cout << "\n";
+
+
+    //================================= Event loop =================================
+
+    Particle *ptrPart = new Particle(simrand);
+    int counter1, counter2;
 
     TStopwatch timer;
     timer.Start();
@@ -185,9 +194,6 @@ void simulation(double Nevents = 100, bool msEnabled = false, char Vtype = '0', 
     hfile.Close();
     delete ptrhits1;
     delete ptrhits2;
-
-    htest->Draw("HIST"); //TEST
-
 }
 
 void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled)
@@ -223,7 +229,6 @@ void NoiseU(const int& noiseMax, const double& noiseRate, const Cylinder& layer,
         new(hits[counter])MyPoint(xNoise, yNoise, zNoise);
         counter++;
     }
-    htest->Fill(nNoise); //TEST
 }
 
 void NoiseP(const int& noiseMax, const double& noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand)
@@ -241,11 +246,14 @@ void NoiseP(const int& noiseMax, const double& noiseRate, const Cylinder& layer,
         new(hits[counter])MyPoint(xNoise, yNoise, zNoise);
         counter++;
     }
-    htest->Fill(nNoise); //TEST
 }
 
-void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, char vt, char mt, char nt)
+void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, string gentypes)
 {
+    char vt = (gentypes.length() > 0) ? gentypes[0] : ' ';
+    char mt = (gentypes.length() > 1) ? gentypes[1] : ' ';
+    char nt = (gentypes.length() > 2) ? gentypes[2] : ' ';
+
     switch(vt)
     {
         case 'o':
