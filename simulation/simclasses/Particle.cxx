@@ -2,7 +2,7 @@
 
 ClassImp(Particle)
 
-void Particle::Init(const double& x, const double& y, const double& z, const double& beta, const double& p)
+void Particle::Init(double x, double y, double z, double beta, double p)
     {
         fX = x;
         fY = y;
@@ -18,22 +18,17 @@ void Particle::Init(const double& x, const double& y, const double& z, const dou
         fC3 = cos(fTheta);
     }
 
-void Particle::Propagation(const double& Rext)
+void Particle::Propagation(double Rext)
 {
-    double t = tParam(Rext);
+    double delta = (fX*fC1 + fY*fC2)*(fX*fC1 + fY*fC2) - (fC1*fC1 + fC2*fC2)*(fX*fX + fY*fY - Rext*Rext);
+    double t = (sqrt(delta) - (fX*fC1 + fY*fC2)) / (fC1*fC1 + fC2*fC2);
     
     fX += t * fC1;
     fY += t * fC2;
     fZ += t * fC3;
 }
 
-double Particle::tParam(const double& Rext)
-{
-    double delta = (fX*fC1 + fY*fC2)*(fX*fC1 + fY*fC2) - (fC1*fC1 + fC2*fC2)*(fX*fX + fY*fY - Rext*Rext);
-    return  (sqrt(delta) - (fX*fC1 + fY*fC2)) / (fC1*fC1 + fC2*fC2);
-}
-
-void Particle::MultScatter(const double& X0, const double& W, const double& R)
+void Particle::MultScatter(double X0, double W, double R)
 {
     double thickness = W/(X0*fabs(sin(fTheta)));
 

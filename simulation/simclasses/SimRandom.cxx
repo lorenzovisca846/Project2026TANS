@@ -2,30 +2,15 @@
 
 ClassImp(SimRandom)
 
-SimRandom::SimRandom() : TRandom3(0),
-    fSeed(0),
-    fEtaHist(nullptr),
-    fMultHist(nullptr)
-{
-
-}
-
-SimRandom::SimRandom(unsigned int seed, TH1F* multHist, TH1F* etaHist) : TRandom3(seed),
-    fSeed(seed),
-    fMultHist(nullptr),
-    fEtaHist(nullptr)
+SimRandom::SimRandom(unsigned int seed, TH1F* multHist, TH1F* etaHist):
+    TRandom3(seed),fSeed(seed),
+    fMultHist(nullptr),fEtaHist(nullptr)
 {
     fMultHist = (TH1F*)multHist->Clone("fMultHist_Sim");
     fMultHist->SetDirectory(nullptr);
     
     fEtaHist = (TH1F*)etaHist->Clone("fEtaHist_Sim");
     fEtaHist->SetDirectory(nullptr);
-}
-
-SimRandom::~SimRandom()
-{
-    delete fMultHist;
-    delete fEtaHist;
 }
 
 void SimRandom::VertGaus(double& x, double& y, double& z, double xyS, double zS)
@@ -57,7 +42,8 @@ double SimRandom::ThetaDist()
 
 double SimRandom::ScatterDist(double p, double beta, double len)
 {
-    double theta0 = (0.0136/(beta*p)) * sqrt(len) * (1. + 0.038*log(len)) * sqrt(2.);
+    // 0.01923 = 0.0136*sqrt(2)
+    double theta0 = (0.01923/(beta*p)) * sqrt(len) * (1. + 0.038*log(len));
     return Gaus(0., theta0);
 }
 
@@ -69,9 +55,4 @@ int SimRandom::NoisePois(double rate, int max)
         result = Poisson(rate);
     } while (result>max);
     return result;
-}
-
-int SimRandom::NoiseUnif(double rate, int max)
-{
-    return Integer(max + 1);
 }

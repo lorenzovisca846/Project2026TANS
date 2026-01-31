@@ -6,23 +6,23 @@
 class MyPoint : public TObject
 {
     public:
-    MyPoint();
-    MyPoint(const double& X,const double& Y,const double& Z);
+        MyPoint():TObject(),fX(0.0),fY(0.0),fZ(0.0),fR(0.0),fPhi(0.0){}
+        MyPoint(double X, double Y, double Z);
 
-    double GetX() const {return fX;}
-    double GetY() const {return fY;}
-    double GetZ() const {return fZ;}
+        double GetX() const {return fX;}
+        double GetY() const {return fY;}
+        double GetZ() const {return fZ;}
 
-    double GetR() const {return fR;}
-    double GetPhi() const {return fPhi;}
+        double GetR() const {return fR;}
+        double GetPhi() const {return fPhi;}
 
     private:
-        double fX;
-        double fY;
-        double fZ;
+        double fX;              // x coordinate
+        double fY;              // y coordinate
+        double fZ;              // z coordinate
 
-        double fR;
-        double fPhi;
+        double fR;              // radial coordinate
+        double fPhi;            // azimut angle
 
     ClassDef(MyPoint,1)
 };

@@ -11,24 +11,21 @@ class Particle : public TObject
         Particle() {}
         Particle(SimRandom* srnd): fSimrand(srnd) {}
 
-        void Init(const double& x, const double& y, const double& z, const double& beta, const double& p);
+        void Init(double x, double y, double z, double beta, double p);
+        void Propagation(double Rext);
+        void MultScatter(double X0, double W, double R);
+
         double GetZ() const {return fZ;}
-
-        void Propagation(const double& Rext);
-
         MyPoint GetPoint() const {return MyPoint(fX, fY, fZ);}
-
-        void MultScatter(const double& X0, const double& W, const double& R);
     
     private:
         SimRandom* fSimrand;
-        double tParam(const double& Rext);
         void AngleUpdate();
 
-        double fX, fY, fZ;
-        double fTheta, fPhi;
-        double fP, fBeta;
-        double fC1, fC2, fC3;
+        double fX, fY, fZ;                      // coordinates
+        double fTheta, fPhi;                    // angles
+        double fP, fBeta;                       // momentum and beta
+        double fC1, fC2, fC3;                   // direction cosines
     
     ClassDef(Particle,1)
 };
