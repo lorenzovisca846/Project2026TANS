@@ -32,7 +32,10 @@ void Particle::Propagation(double Rext)
 
 void Particle::MultScatter(double X0, double W, double R)
 {
-    double thickness = W/(X0*fabs(sin(fTheta)));
+    double xnorm = fX/R;
+    double ynorm = fY/R;
+
+    double thickness = W/(X0*fabs(xnorm*fC1 + ynorm*fC2));
 
     double dTheta = fSimrand->ScatterDist(fP, fBeta, thickness);
     double dPhi = fSimrand->PhiDist();
