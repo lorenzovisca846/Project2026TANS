@@ -16,7 +16,7 @@ class Particle : public TObject
         void MultScatter(double X0, double W, double R);
 
         double GetZ() const {return fZ;}
-        MyPoint GetPoint() const {return MyPoint(fX, fY, fZ, ftrackID);}
+        MyPoint GetPoint() const {return MyPoint(fX, fY, fZ, fTrackID);}
     
     private:
         SimRandom* fSimrand;
@@ -27,7 +27,7 @@ class Particle : public TObject
         double fP, fBeta;                       // momentum and beta
         double fC1, fC2, fC3;                   // direction cosines
 
-        int ftrackID;                           // track ID
+        int fTrackID;                           // track ID
     
     ClassDef(Particle,1)
 };
