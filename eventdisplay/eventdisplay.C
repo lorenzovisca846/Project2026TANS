@@ -32,7 +32,7 @@ void eventdisplay()
 
 void geometry()
 {
-    TEnv *config = new TEnv("../config/simDisplay.txt");
+    TEnv *config = new TEnv("config/simDisplay.txt");
 
     double bpR          = config->GetValue("BeamPipeRadius", 3.0);
     double bpL          = config->GetValue("Length", 27.0);
@@ -77,7 +77,7 @@ void geometry()
 void event() 
 {
 
-    TFile *InputFile = TFile::Open("../sim_display.root","READ");
+    TFile *InputFile = TFile::Open("sim_display.root","READ");
     TTree *tree = (TTree*)InputFile->Get("Tree_SimOut");
 
     double VTXx = 0., VTXy = 0., VTXz = 0.;
