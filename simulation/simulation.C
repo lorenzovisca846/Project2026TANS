@@ -6,6 +6,7 @@
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TStopwatch.h>
+#include <TEnv.h>
 
 #include "simclasses/Cylinder.h"
 #include "simclasses/SimRandom.h"
@@ -31,6 +32,7 @@ POSSIBILI SCELTE PER LA GENERAZIONE CASUALE:
 3) Rumore:
     - p         poissoniano
     - u         uniforme
+    - f         fisso (rate)
 ====================================================================================
 */
 
@@ -42,27 +44,57 @@ void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& c
 
 void NoiseU(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
 void NoiseP(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
+void NoiseF(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
 
 void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, const string& gentypes);
 
-void simulation(double Nevents = 10000, bool msEnabled = false, string gentypes = "ghp", unsigned int seed = 0)
+void simulation(string configFile = "simConfig.txt")
 {
+
+    TEnv *config = new TEnv(configFile.c_str());
+
+    int Nevents         = config->GetValue("Events", 10000);
+    string gentypes     = config->GetValue("Generation", "ghp");
+    bool msEnabled      = config->GetValue("MultScattering", false);
+    unsigned int seed   = config->GetValue("Seed", 0);
+
+    int multMin         = config->GetValue("Minimum", 0);
+    int multMax         = config->GetValue("Maximum", 60);
+
+    bool noiseEnabled   = config->GetValue("NoiseEnabled", true);
+    int noiseMax        = config->GetValue("MaxNoise", 20);
+    double noiseRate    = config->GetValue("NoiseRate", 5.0);
+
+    double vtxXYsigma   = config->GetValue("SigmaXY", 0.01);
+    double vtxZsigma    = config->GetValue("SigmaZ", 5.3);
+
+    double bpR          = config->GetValue("BeamPipeRadius", 3.0);
+    double bpL          = config->GetValue("Length", 27.0);
+    double bpW          = config->GetValue("BeamPipeWidth", 0.08);
+
+    double l1R          = config->GetValue("Layer1Radius", 4.0);
+    double l1L          = config->GetValue("Length", 27.0);
+    double l1W          = config->GetValue("LayerWidth", 0.02);
+
+    double l2R          = config->GetValue("Layer2Radius", 7.0);
+    double l2L          = config->GetValue("Length", 27.0);
+
+    string bpMat        = config->GetValue("BeamPipeMaterial", "Be");
+    string lMat         = config->GetValue("LayerMaterial", "Si");
+    
+    string inputName    = config->GetValue("inputName", "inputDistributions.root");  
+    string inputHM      = config->GetValue("inputHistoMult", "multHist");
+    string inputHE      = config->GetValue("inputHistoEta", "etaHist");
+
+    delete config;
+
+
+
     //================================= Config parameters =================================
-    int multMin = 0;
-    int multMax = 60;
-    const int noiseMax = 20;
-    const double noiseRate = 5.;
 
-    const double vtxXYsigma = 0.01;
-    const double vtxZsigma = 5.3;
-
-    const double bpR = 3.0, bpL = 27.0, bpW = 0.08;
-    const double l1R = 4.0, l1L = 27.0, l1W = 0.02;
-    const double l2R = 7.0, l2L = 27.0;
-
-    Cylinder beamPipe(bpR, bpL, bpW, "Be");
-    Cylinder Layer1(l1R, l1L, l1W, "Si");
-    Cylinder Layer2(l2R, l2L, 0., "Si");
+    Cylinder beamPipe(bpR, bpL, bpW, bpMat);
+    Cylinder Layer1(l1R, l1L, l1W, lMat);
+    Cylinder Layer2(l2R, l2L, 0., lMat);
 
     typedef struct{
         double X, Y, Z;
@@ -70,9 +102,9 @@ void simulation(double Nevents = 10000, bool msEnabled = false, string gentypes 
     static VTX vertex;
 
     //================================= Input file for distributions =================================
-    TFile *inputFile = new TFile("inputDistributions.root","READ");
-    TH1F *multHist= (TH1F*)inputFile->Get("multHist"); 
-    TH1F *etaHist= (TH1F*)inputFile->Get("etaHist"); 
+    TFile *inputFile = new TFile(inputName.c_str(),"READ");
+    TH1F *multHist= (TH1F*)inputFile->Get(inputHM.c_str()); 
+    TH1F *etaHist= (TH1F*)inputFile->Get(inputHE.c_str()); 
 
     delete gRandom;
     SimRandom *simrand = new SimRandom(seed, multHist, etaHist);
@@ -124,6 +156,7 @@ void simulation(double Nevents = 10000, bool msEnabled = false, string gentypes 
     {
         if(gentypes[2]=='u' || gentypes[2]=='U') Noisestr = "Uniform";
         if(gentypes[2]=='p' || gentypes[2]=='P') Noisestr = "Poisson";
+        if(gentypes[2]=='f' || gentypes[2]=='F') Noisestr = "Fixed";
     }
     
 
@@ -133,6 +166,8 @@ void simulation(double Nevents = 10000, bool msEnabled = false, string gentypes 
     cout << "  Multiple scattering:      " << (msEnabled ? "YES" : "NO") << endl;
     cout << "  Vertex generation:        " << Vertexstr << endl;
     cout << "  Multiplicity generation:  " << Multstr << endl;
+    cout << "  Noise enabled:            " << (noiseEnabled ? "YES" : "NO") << endl;
+    if(noiseEnabled)
     cout << "  Noise generation:         " << Noisestr << endl;
     cout << "=====================================================" << endl;
     cout << "\n";
@@ -167,7 +202,7 @@ void simulation(double Nevents = 10000, bool msEnabled = false, string gentypes 
         }
 
         //================================= Noise generation =================================
-        if(noiseMax>0)
+        if(noiseEnabled)
         {
             NoiseGen(noiseMax, noiseRate, Layer1, hits1, counter1, simrand);
             NoiseGen(noiseMax, noiseRate, Layer2, hits2, counter2, simrand);
@@ -245,6 +280,23 @@ void NoiseP(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray&
     }
 }
 
+void NoiseF(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand)
+{
+    int nNoise = (int)noiseRate;
+
+    for(int i=0;i<nNoise;i++)
+    {
+        double phiNoise = simrand->PhiDist();
+        double zNoise = simrand->ZDist(layer.GetL());
+
+        double xNoise = layer.GetR() * cos(phiNoise);
+        double yNoise = layer.GetR() * sin(phiNoise);
+
+        new(hits[counter])MyPoint(xNoise, yNoise, zNoise);
+        counter++;
+    }
+}
+
 void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, const string& gentypes)
 {
     char vt = (gentypes.length() > 0) ? gentypes[0] : ' ';
@@ -282,8 +334,12 @@ void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, const string& gent
         case 'u':
             nptr = &NoiseU;
             break;
+        case 'f':
+            nptr = &NoiseF;
+            break;
         default:
             nptr = &NoiseP;
             break;
     }
 }
+ 
