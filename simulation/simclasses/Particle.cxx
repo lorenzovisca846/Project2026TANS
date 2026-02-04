@@ -17,7 +17,7 @@ void Particle::Init(double x, double y, double z, double beta, double p, int tra
         fC2 = sin(fTheta) * sin(fPhi);
         fC3 = cos(fTheta);
 
-        ftrackID = trackID;
+        fTrackID = trackID;
     }
 
 void Particle::Propagation(double Rext)
