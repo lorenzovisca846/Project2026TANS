@@ -2,4 +2,5 @@
 .DS_Store
 
 build/
-simulation_output.root
+*.root
+!inputDistributions.root
