@@ -13,6 +13,8 @@
 #include "simclasses/Particle.h"
 #include "simclasses/MyPoint.h"
 
+#define DISPLAY true
+
 using namespace std;
 
 /*
@@ -54,6 +56,10 @@ int main(int argc, char** argv)
     //================================= Config parameters =================================
     string cFile = "simConfig.txt";
     if (argc > 1) cFile = argv[1];
+
+    #if DISPLAY
+        cFile = "simDisplay.txt";
+    #endif
 
     string configFile = "../../config/" + cFile;
 
@@ -124,7 +130,7 @@ int main(int argc, char** argv)
     FunctionAssignment(VertGen, MultGen, NoiseGen, gentypes);
 
     TFile hfile(outputName.c_str(),"RECREATE");
-    TTree *tree = new TTree("Tree","Vertex-Hits TTree");
+    TTree *tree = new TTree("Tree_SimOut","Vertex-Hits TTree");
 
     int arrdim = multMax + noiseMax + 3; // safety margin
 
@@ -137,6 +143,12 @@ int main(int argc, char** argv)
     tree->Branch("Vertex",&vertex.X,"X/D:Y:Z:mult/I");
     tree->Branch("Hits_L1",&ptrhits1);
     tree->Branch("Hits_L2",&ptrhits2);
+
+    #if DISPLAY
+        TClonesArray *ptrhitsBP = new TClonesArray("MyPoint",arrdim);
+        TClonesArray &hitsBP = *ptrhitsBP;
+        tree->Branch("Hits_BP",&ptrhitsBP);
+    #endif
 
     //================================= Status print =================================
     string Vertexstr = "Gauss (default)";
@@ -176,9 +188,14 @@ int main(int argc, char** argv)
     cout << "=====================================================" << endl;
     cout << "\n";
 
+    #if DISPLAY
+        cout << "================ Display mode enabled ================" << endl;
+        cout << "\n";
+    #endif
+
     //================================= Event loop =================================
     Particle *ptrPart = new Particle(simrand);
-    int counter1, counter2;
+    int counter1, counter2, counterBP;
 
     TStopwatch timer;
     timer.Start();
@@ -193,13 +210,18 @@ int main(int argc, char** argv)
 
         counter1 = 0;
         counter2 = 0;
+        counterBP = 0;
 
         for(int j=0; j<vertex.mult; j++)
         {
             //================================= Particle propagation =================================
             ptrPart->Init(vertex.X, vertex.Y, vertex.Z, 1.0, 0.7, j);
 
-            Transport(ptrPart, beamPipe, hits1, counter1, false, msEnabled);
+            #if DISPLAY
+                Transport(ptrPart, beamPipe, hitsBP, counterBP, true, msEnabled);
+            #else
+                Transport(ptrPart, beamPipe, hits1, counter1, false, msEnabled);
+            #endif
             Transport(ptrPart, Layer1, hits1, counter1, true, msEnabled);
             Transport(ptrPart, Layer2, hits2, counter2, true, false);
         }
@@ -215,6 +237,9 @@ int main(int argc, char** argv)
         tree->Fill();
         ptrhits1->Clear();
         ptrhits2->Clear();
+        #if DISPLAY
+            ptrhitsBP->Clear();
+        #endif
     }
 
     timer.Stop(); 
@@ -227,6 +252,11 @@ int main(int argc, char** argv)
     delete simrand;
     delete ptrhits1;
     delete ptrhits2;
+    #if DISPLAY
+        delete ptrhitsBP;
+    #endif
+
+    return 0;
 }
 
 void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled)

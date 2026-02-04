@@ -1,0 +1,38 @@
+# ====================  Parametri di Simulazione  =====================
+
+Events:             1
+Generation:         ofp
+MultScattering:     1
+Seed:               67
+
+# ====================  Gestione file  ================================
+
+inputName:          inputDistributions.root
+inputHistoMult:     multHist
+inputHistoEta:      etaHist
+outputName:         sim_display.root
+
+# ====================  Parametri di Molteplicità  ====================
+
+Minimum:            0
+Maximum:            80
+
+# ====================  Parametri di Rumore  ==========================
+
+NoiseEnabled:       0
+MaxNoise:           20
+NoiseRate:          5.0
+
+# ====================  Parametri Geometrici  =========================
+# (nota) tutte le lunghezze sono espresse in cm
+
+SigmaXY:            0.01
+SigmaZ:             5.3
+BeamPipeRadius:     3.0
+Layer1Radius:       4.0
+Layer2Radius:       7.0
+BeamPipeWidth:      0.08
+LayerWidth:         0.02
+Length:             27.0
+BeamPipeMaterial:   Be
+LayerMaterial:      Si
