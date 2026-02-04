@@ -1,9 +1,5 @@
 .vscode/
-bozze/
+.DS_Store
 
-*.so
-*.d
-*.pcm
-*/htree.root
-
-distCreator.C
+build/
+simulation_output.root

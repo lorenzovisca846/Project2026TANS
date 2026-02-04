@@ -1,4 +1,4 @@
-#include <Riostream.h>
+#include <iostream>
 #include <TRandom3.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -48,8 +48,12 @@ void NoiseF(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray&
 
 void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, const string& gentypes);
 
-void simulation(string configFile = "simConfig.txt")
+int main(int argc, char** argv)
 {
+    string cFile = "simConfig.txt";
+    if (argc > 1) cFile = argv[1];
+
+    string configFile = "../../config/" + cFile;
 
     TEnv *config = new TEnv(configFile.c_str());
 
@@ -82,13 +86,12 @@ void simulation(string configFile = "simConfig.txt")
     string bpMat        = config->GetValue("BeamPipeMaterial", "Be");
     string lMat         = config->GetValue("LayerMaterial", "Si");
     
-    string inputName    = config->GetValue("inputName", "inputDistributions.root");  
+    string inputN0      = config->GetValue("inputName", "inputDistributions.root");
+    string inputName    = "../../config/" + inputN0; 
     string inputHM      = config->GetValue("inputHistoMult", "multHist");
     string inputHE      = config->GetValue("inputHistoEta", "etaHist");
 
     delete config;
-
-
 
     //================================= Config parameters =================================
 
@@ -119,7 +122,7 @@ void simulation(string configFile = "simConfig.txt")
     FunctionAssignment(VertGen, MultGen, NoiseGen, gentypes);
 
     //================================= Output file and tree =================================
-    TFile hfile("htree.root","RECREATE");
+    TFile hfile("../../simulation_output.root","RECREATE");
     TTree *tree = new TTree("Tree","Vertex-Hits TTree");
 
     int arrdim = multMax + noiseMax + 5;
@@ -135,20 +138,20 @@ void simulation(string configFile = "simConfig.txt")
     tree->Branch("Hits_L2",&ptrhits2);
 
     //================================= Status print =================================
-    string Vertexstr = "Gaus (default)";
+    string Vertexstr = "Gauss (default)";
     if(gentypes.length() > 0)
     {
         if(gentypes[0]=='o' || gentypes[0]=='O') Vertexstr = "Origin";
         if(gentypes[0]=='u' || gentypes[0]=='U') Vertexstr = "Uniform";
-        if(gentypes[0]=='g' || gentypes[0]=='G') Vertexstr = "Gaus";
+        if(gentypes[0]=='g' || gentypes[0]=='G') Vertexstr = "Gauss";
     }
 
-    string Multstr = "Histo (default)";
+    string Multstr = "From Histogram (default)";
     if(gentypes.length() > 1)
     {
         if(gentypes[1]=='f' || gentypes[1]=='F') Multstr = "Fixed";
         if(gentypes[1]=='u' || gentypes[1]=='U') Multstr = "Uniform";
-        if(gentypes[1]=='h' || gentypes[1]=='H') Multstr = "Histo";
+        if(gentypes[1]=='h' || gentypes[1]=='H') Multstr = "From Histogram";
     }
 
     string Noisestr = "Poisson (default)";
@@ -221,7 +224,6 @@ void simulation(string configFile = "simConfig.txt")
     hfile.Write();
     hfile.Close();
 
-    //Check if these are needed
     delete ptrPart;
     delete simrand;
     delete ptrhits1;
