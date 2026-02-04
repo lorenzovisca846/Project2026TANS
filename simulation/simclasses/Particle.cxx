@@ -70,5 +70,8 @@ void Particle::MultScatter(double X0, double W, double R)
 void Particle::AngleUpdate()
 {
     fTheta = acos(fC3);
-    fPhi = atan2(fC2, fC1);
+    if(fabs(fC3) < 1.)
+        fPhi = atan2(fC2, fC1);
+    else
+        fPhi = 0.;                  // phi is undefined for theta = 0 or pi, set to 0 in this case
 }

@@ -45,12 +45,12 @@ void NoiseP(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray&
 
 void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, const string& gentypes);
 
-void simulation(double Nevents = 10000, bool msEnabled = false, string gentypes = "ghp", unsigned int seed = 0)
+void simulation(double Nevents = 10000, string gentypes = "ghp", bool msEnabled = false, bool noiseEnabled = true, unsigned int seed = 0)
 {
     //================================= Config parameters =================================
     int multMin = 0;
     int multMax = 60;
-    const int noiseMax = 20;
+    const int noiseMax = (noiseEnabled ? 20 : 0);
     const double noiseRate = 5.;
 
     const double vtxXYsigma = 0.01;
@@ -167,7 +167,7 @@ void simulation(double Nevents = 10000, bool msEnabled = false, string gentypes 
         }
 
         //================================= Noise generation =================================
-        if(noiseMax>0)
+        if(noiseEnabled)
         {
             NoiseGen(noiseMax, noiseRate, Layer1, hits1, counter1, simrand);
             NoiseGen(noiseMax, noiseRate, Layer2, hits2, counter2, simrand);

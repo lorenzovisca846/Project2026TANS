@@ -17,6 +17,8 @@ class Particle : public TObject
 
         double GetZ() const {return fZ;}
         MyPoint GetPoint() const {return MyPoint(fX, fY, fZ, ftrackID);}
+
+        double getTheta() const {return fTheta;}
     
     private:
         SimRandom* fSimrand;
