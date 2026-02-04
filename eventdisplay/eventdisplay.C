@@ -4,6 +4,7 @@
 #include <TGeoMedium.h>
 #include <TEnv.h>
 #include <TPolyLine3D.h>
+#include <TPolyMarker3D.h>
 #include <TTree.h>
 #include <TClonesArray.h>
 #include <TFile.h>
@@ -61,7 +62,7 @@ void geometry()
     top->AddNode(beampipe, 1);
     
     TGeoVolume *layer1 = geom->MakeTube("LAYER1", medVacuum, l1R, l1R + l1W, l1L / 2.0);
-    layer1->SetLineColor(kOrange);
+    layer1->SetLineColor(kYellow);
     top->AddNode(layer1, 1);
     
     TGeoVolume *layer2 = geom->MakeTube("LAYER2", medVacuum, l2R, l2R + l2W, l2L / 2.0);
@@ -93,6 +94,7 @@ void event()
     tree->GetEntry(0);
 
     map<int, vector<MyPoint*>> track_map;
+    vector<MyPoint*> noise_points;
 
     auto sort_hits = [&](TClonesArray* array)
     {
@@ -103,6 +105,8 @@ void event()
             int tid = p->GetTrackID();
             if (tid != -1) 
                 track_map[tid].push_back(p);
+            else
+                noise_points.push_back(p);
         }
     };
 
@@ -114,17 +118,37 @@ void event()
     {
         int n_points = hits.size() + 1;
         TPolyLine3D *line = new TPolyLine3D(n_points);
+        TPolyMarker3D *markers = new TPolyMarker3D(hits.size());
         
         line->SetPoint(0, vertex.X, vertex.Y, vertex.Z);
         
+        
         for (size_t i = 0; i < hits.size(); ++i)
+        {
             line->SetPoint(i + 1, hits[i]->GetX(), hits[i]->GetY(), hits[i]->GetZ());
+            if(i>0)
+                markers->SetPoint(i, hits[i]->GetX(), hits[i]->GetY(), hits[i]->GetZ());
+        }
+
+        markers->SetMarkerStyle(20);
+        markers->SetMarkerSize(0.2);
+        markers->SetMarkerColor(kSpring);
 
         if (hits.size() < 3)
-            line->SetLineColor(kRed);
+            line->SetLineColor(kBlue);
         else
-            line->SetLineColor(kCyan);
+            line->SetLineColor(kSpring);
         line->SetLineWidth(3);
         line->Draw("same");
+        markers->Draw("same");
     }
+
+    TPolyMarker3D *noise_markers = new TPolyMarker3D(noise_points.size());
+    for (size_t i = 0; i < noise_points.size(); ++i)
+        noise_markers->SetPoint(i,noise_points[i]->GetX(), noise_points[i]->GetY(), noise_points[i]->GetZ());
+
+    noise_markers->SetMarkerStyle(20);
+    noise_markers->SetMarkerSize(0.2);
+    noise_markers->SetMarkerColor(kRed);
+    noise_markers->Draw("same");
 }

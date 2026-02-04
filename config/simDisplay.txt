@@ -1,7 +1,7 @@
 # ====================  Parametri di Simulazione  =====================
 
 Events:             1
-Generation:         ofp
+Generation:         off
 MultScattering:     1
 Seed:               67
 
@@ -15,13 +15,13 @@ outputName:         sim_display.root
 # ====================  Parametri di Molteplicità  ====================
 
 Minimum:            0
-Maximum:            80
+Maximum:            30
 
 # ====================  Parametri di Rumore  ==========================
 
-NoiseEnabled:       0
+NoiseEnabled:       1
 MaxNoise:           20
-NoiseRate:          5.0
+NoiseRate:          10.0
 
 # ====================  Parametri Geometrici  =========================
 # (nota) tutte le lunghezze sono espresse in cm
