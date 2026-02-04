@@ -91,6 +91,9 @@ int main(int argc, char** argv)
     string inputHM      = config->GetValue("inputHistoMult", "multHist");
     string inputHE      = config->GetValue("inputHistoEta", "etaHist");
 
+    string outputN0     = config->GetValue("outputName", "simulation_output.root");
+    string outputName   = "../../" + outputN0;
+
     delete config;
 
     //================================= Config parameters =================================
@@ -122,7 +125,7 @@ int main(int argc, char** argv)
     FunctionAssignment(VertGen, MultGen, NoiseGen, gentypes);
 
     //================================= Output file and tree =================================
-    TFile hfile("../../simulation_output.root","RECREATE");
+    TFile hfile(outputName.c_str(),"RECREATE");
     TTree *tree = new TTree("Tree","Vertex-Hits TTree");
 
     int arrdim = multMax + noiseMax + 5;
