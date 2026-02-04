@@ -50,6 +50,8 @@ void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, const string& gent
 
 int main(int argc, char** argv)
 {
+
+    //================================= Config parameters =================================
     string cFile = "simConfig.txt";
     if (argc > 1) cFile = argv[1];
 
@@ -96,8 +98,6 @@ int main(int argc, char** argv)
 
     delete config;
 
-    //================================= Config parameters =================================
-
     Cylinder beamPipe(bpR, bpL, bpW, bpMat);
     Cylinder Layer1(l1R, l1L, l1W, lMat);
     Cylinder Layer2(l2R, l2L, 0., lMat);
@@ -107,7 +107,6 @@ int main(int argc, char** argv)
         int mult;} VTX;
     static VTX vertex;
 
-    //================================= Input file for distributions =================================
     TFile *inputFile = new TFile(inputName.c_str(),"READ");
     TH1F *multHist= (TH1F*)inputFile->Get(inputHM.c_str()); 
     TH1F *etaHist= (TH1F*)inputFile->Get(inputHE.c_str()); 
@@ -124,11 +123,10 @@ int main(int argc, char** argv)
     nGen NoiseGen;
     FunctionAssignment(VertGen, MultGen, NoiseGen, gentypes);
 
-    //================================= Output file and tree =================================
     TFile hfile(outputName.c_str(),"RECREATE");
     TTree *tree = new TTree("Tree","Vertex-Hits TTree");
 
-    int arrdim = multMax + noiseMax + 5;
+    int arrdim = multMax + noiseMax + 3; // safety margin
 
     TClonesArray *ptrhits1 = new TClonesArray("MyPoint",arrdim);
     TClonesArray &hits1 = *ptrhits1;
@@ -178,7 +176,6 @@ int main(int argc, char** argv)
     cout << "=====================================================" << endl;
     cout << "\n";
 
-
     //================================= Event loop =================================
     Particle *ptrPart = new Particle(simrand);
     int counter1, counter2;
@@ -215,7 +212,6 @@ int main(int argc, char** argv)
         }
 
         //================================= Tree fill =================================
-
         tree->Fill();
         ptrhits1->Clear();
         ptrhits2->Clear();
