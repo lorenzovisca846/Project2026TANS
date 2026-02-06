@@ -2,6 +2,7 @@
 #define MYPOINT_H
 
 #include "TObject.h"
+#include <CMath>
 
 class MyPoint : public TObject
 {
