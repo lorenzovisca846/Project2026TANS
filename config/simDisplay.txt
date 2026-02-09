@@ -15,7 +15,7 @@ outputName:         sim_display.root
 # ====================  Parametri di Molteplicità  ====================
 
 Minimum:            0
-Maximum:            30
+Maximum:            5000
 
 # ====================  Parametri di Rumore  ==========================
 
