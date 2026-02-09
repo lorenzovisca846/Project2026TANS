@@ -13,7 +13,7 @@
 #include <cmath>
 #include <iostream>
 
-#include "../classes/MyPoint.h"
+#include "classes/MyPoint.h"
 
 using namespace std;
 

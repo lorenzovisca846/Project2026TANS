@@ -13,7 +13,7 @@
 #include "classes/Particle.h"
 #include "classes/MyPoint.h"
 
-#define DISPLAY false
+#define DISPLAY true
 
 using namespace std;
 

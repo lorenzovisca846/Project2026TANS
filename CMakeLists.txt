@@ -13,3 +13,6 @@ add_subdirectory(classes)
 
 add_executable(simulation main_sim.cpp)
 target_link_libraries(simulation ProjectClasses ${ROOT_LIBRARIES})
+
+add_executable(reconstruction main_rec.cpp)
+target_link_libraries(reconstruction ProjectClasses ${ROOT_LIBRARIES})
