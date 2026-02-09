@@ -13,7 +13,7 @@
 #include "simclasses/Particle.h"
 #include "simclasses/MyPoint.h"
 
-#define DISPLAY true
+#define DISPLAY false
 
 using namespace std;
 
@@ -100,7 +100,7 @@ int main(int argc, char** argv)
     string inputHE      = config->GetValue("inputHistoEta", "etaHist");
 
     string outputN0     = config->GetValue("outputName", "simulation_output.root");
-    string outputName   = "../../" + outputN0;
+    string outputName   = "../../outputs/" + outputN0;
 
     delete config;
 

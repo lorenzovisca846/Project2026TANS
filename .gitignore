@@ -2,8 +2,4 @@
 .DS_Store
 
 build/
-
-*.root
-!config/inputDistributions.root
-
-Sorino_Visca/
+outputs/
