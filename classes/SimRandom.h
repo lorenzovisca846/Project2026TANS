@@ -9,6 +9,7 @@ class SimRandom : public TRandom3 {
     public:
         SimRandom():TRandom3(0),fSeed(0),fEtaHist(nullptr),fMultHist(nullptr){}
         SimRandom(unsigned int seed, TH1F* multHist, TH1F* etaHist);
+        SimRandom(unsigned int seed);
 
         void VertGaus(double&, double&, double&, double, double);
         void VertOrig(double&, double&, double&, double, double);

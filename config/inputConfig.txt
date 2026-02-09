@@ -36,3 +36,13 @@ LayerWidth:         0.02
 Length:             27.0
 BeamPipeMaterial:   Be
 LayerMaterial:      Si
+
+
+# ====================  Parametri di ricostruzione  ===================
+
+SmearZ:             0.012
+SmearRPhi:          0.003
+DeltaPhiCut:        0.1
+
+StepSize:           0.01
+NSteps:             10000

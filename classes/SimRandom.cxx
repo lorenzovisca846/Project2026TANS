@@ -13,6 +13,11 @@ SimRandom::SimRandom(unsigned int seed, TH1F* multHist, TH1F* etaHist):
     fEtaHist->SetDirectory(nullptr);
 }
 
+SimRandom::SimRandom(unsigned int seed):
+    TRandom3(seed),fSeed(seed),
+    fMultHist(nullptr),fEtaHist(nullptr)
+    {}
+
 void SimRandom::VertGaus(double& x, double& y, double& z, double xyS, double zS)
 {
     x = Gaus(0., xyS);

@@ -1,7 +1,7 @@
 #include "MyPoint.h"
 #include "TObject.h"
 
-ClassImp(Point)
+ClassImp(MyPoint)
 
 MyPoint::MyPoint(double X, double Y, double Z):
     TObject(),

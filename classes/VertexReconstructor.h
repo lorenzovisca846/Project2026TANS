@@ -22,7 +22,7 @@ using namespace std;
 class VertexReconstructor
 {
 private:
-    config fConfig;      // Configurazione del detector
+    Config fConfig;      // Configurazione del detector
     TRandom3 fRandom;    // Generatore di numeri casuali
     
 public:
@@ -30,7 +30,7 @@ public:
      * @brief Costruttore della classe VertexReconstructor
      * @param config Configurazione del detector
      */
-    VertexReconstructor(const config& cfg) : fConfig(cfg), fRandom(0) {}
+    VertexReconstructor(const Config& cfg) : fConfig(cfg), fRandom(0) {}
     
     /**
      * @brief Forma i tracklets abbinando hit tra layer 1 e 2

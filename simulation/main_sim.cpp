@@ -8,10 +8,10 @@
 #include <TStopwatch.h>
 #include <TEnv.h>
 
-#include "simclasses/Cylinder.h"
-#include "simclasses/SimRandom.h"
-#include "simclasses/Particle.h"
-#include "simclasses/MyPoint.h"
+#include "../classes/Cylinder.h"
+#include "../classes/SimRandom.h"
+#include "../classes/Particle.h"
+#include "../classes/MyPoint.h"
 
 #define DISPLAY false
 
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 {
 
     //================================= Config parameters =================================
-    string cFile = "simConfig.txt";
+    string cFile = "inputConfig.txt";
     if (argc > 1) cFile = argv[1];
 
     #if DISPLAY

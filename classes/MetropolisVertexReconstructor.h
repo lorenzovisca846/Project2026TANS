@@ -19,7 +19,7 @@ using namespace std;
 class MetropolisVertexReconstructor
 {
 private:
-    config fConfig;           // Configurazione del detector
+    Config fConfig;           // Configurazione del detector
     TRandom3 fRandom;         // Generatore di numeri casuali
     double fStepSize;         // Dimensione del passo per Metropolis [cm]
     int fIterations;          // Numero di iterazioni
@@ -33,7 +33,7 @@ public:
      * @param stepSize Dimensione del passo per Metropolis [cm]
      * @param iterations Numero di iterazioni
      */
-    MetropolisVertexReconstructor(const config& cfg, 
+    MetropolisVertexReconstructor(const Config& cfg, 
                                   double stepSize = 0.01, 
                                   int iterations = 5000) 
         : fConfig(cfg), fRandom(0), fStepSize(stepSize), 

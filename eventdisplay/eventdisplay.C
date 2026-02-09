@@ -13,7 +13,7 @@
 #include <cmath>
 #include <iostream>
 
-#include "../simulation/simclasses/MyPoint.h"
+#include "../classes/MyPoint.h"
 
 using namespace std;
 
@@ -77,7 +77,7 @@ void geometry()
 void event() 
 {
 
-    TFile *InputFile = TFile::Open("sim_display.root","READ");
+    TFile *InputFile = TFile::Open("outputs/sim_display.root","READ");
     TTree *tree = (TTree*)InputFile->Get("Tree_SimOut");
 
     double VTXx = 0., VTXy = 0., VTXz = 0.;
