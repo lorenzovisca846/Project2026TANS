@@ -41,7 +41,7 @@ class Config : public TObject
     int metropolisNSteps;          // Numero di passi per Metropolis
 
     // Taglio per formare i tracklets
-    double deltaPhiCut;              // rad (massima differenza in φ per matching hits)
+    double deltaPhiCut;              // rad (massima differenza in phi per matching hits)
 
     void Print();
 
