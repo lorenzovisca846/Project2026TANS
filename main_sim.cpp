@@ -8,10 +8,10 @@
 #include <TStopwatch.h>
 #include <TEnv.h>
 
-#include "../classes/Cylinder.h"
-#include "../classes/SimRandom.h"
-#include "../classes/Particle.h"
-#include "../classes/MyPoint.h"
+#include "classes/Cylinder.h"
+#include "classes/SimRandom.h"
+#include "classes/Particle.h"
+#include "classes/MyPoint.h"
 
 #define DISPLAY false
 
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
         cFile = "simDisplay.txt";
     #endif
 
-    string configFile = "../../config/" + cFile;
+    string configFile = "../config/" + cFile;
 
     TEnv *config = new TEnv(configFile.c_str());
 
@@ -95,12 +95,12 @@ int main(int argc, char** argv)
     string lMat         = config->GetValue("LayerMaterial", "Si");
     
     string inputN0      = config->GetValue("inputName", "inputDistributions.root");
-    string inputName    = "../../config/" + inputN0; 
+    string inputName    = "../config/" + inputN0; 
     string inputHM      = config->GetValue("inputHistoMult", "multHist");
     string inputHE      = config->GetValue("inputHistoEta", "etaHist");
 
     string outputN0     = config->GetValue("outputName", "simulation_output.root");
-    string outputName   = "../../outputs/" + outputN0;
+    string outputName   = "../outputs/" + outputN0;
 
     delete config;
 

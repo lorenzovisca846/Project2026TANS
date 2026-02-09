@@ -1,13 +1,13 @@
 QUICK START
 
-Come compilare ed eseguire il codice di simulazione. Dalla cartella home del progetto:
+Come compilare ed eseguire il codice. Dalla cartella home del progetto:
 
-mkdir simulation/build
-cd simulation/build
-cmake ..
-make
+    mkdir build
+    cd build 
+    cmake ..
+    make
 
 A questo punto il programma può essere eseguito dalla cartella build con il comando:
 
-./simulation
-
+    cd simulation
+    ./simulation

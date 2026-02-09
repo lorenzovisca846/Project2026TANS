@@ -10,6 +10,6 @@ include(${ROOT_USE_FILE})
 include_directories(${CMAKE_SOURCE_DIR}/classes)
 
 add_subdirectory(classes)
-add_subdirectory(simulation)
-# add_subdirectory(reconstruction)
-# add_subdirectory(analysis)
+
+add_executable(simulation main_sim.cpp)
+target_link_libraries(simulation ProjectClasses ${ROOT_LIBRARIES})
