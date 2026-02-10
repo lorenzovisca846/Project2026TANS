@@ -198,6 +198,10 @@ public:
         return weightedIntersections[n/2].first;
     }
     
+
+
+
+    
     /**
      * @brief Ricostruzione iterativa robusta del vertice
      * @param tracklets Vettore di tracklets validi
