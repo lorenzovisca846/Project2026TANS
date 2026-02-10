@@ -50,8 +50,7 @@ void NoiseF(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray&
 
 void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, const string& gentypes);
 
-void SaveHit(TClonesArray& hits, int& counter, Particle* part);
-void SaveHit(TClonesArray& hits, int& counter, double x, double y, double z);
+void SmearAndSave(TClonesArray& hits, int& counter, Particle* part);
 
 int main(int argc, char** argv)
 {
@@ -269,7 +268,7 @@ void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& c
     if(fabs(part->GetZ()) < layer.GetL()*0.5)
     {
         if(detector)
-            SaveHit(hits, counter, part);
+            SmearAndSave(hits, counter, part);
 
         if(msEnabled)
             part->MultScatter(layer.GetX0(), layer.GetW(), layer.GetR());
@@ -289,7 +288,8 @@ void NoiseU(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray&
         double xNoise = layer.GetR() * cos(phiNoise);
         double yNoise = layer.GetR() * sin(phiNoise);
 
-        SaveHit(hits, counter, xNoise, yNoise, zNoise);
+        new(hits[counter])MyPoint(xNoise, yNoise, zNoise);
+        counter++;
     }
 }
 
@@ -305,7 +305,8 @@ void NoiseP(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray&
         double xNoise = layer.GetR() * cos(phiNoise);
         double yNoise = layer.GetR() * sin(phiNoise);
 
-        SaveHit(hits, counter, xNoise, yNoise, zNoise);
+        new(hits[counter])MyPoint(xNoise, yNoise, zNoise);
+        counter++;
     }
 }
 
@@ -321,7 +322,8 @@ void NoiseF(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray&
         double xNoise = layer.GetR() * cos(phiNoise);
         double yNoise = layer.GetR() * sin(phiNoise);
 
-        SaveHit(hits, counter, xNoise, yNoise, zNoise);
+        new(hits[counter])MyPoint(xNoise, yNoise, zNoise);
+        counter++;
     }
 }
 
@@ -371,14 +373,10 @@ void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, const string& gent
     }
 }
 
-void SaveHit(TClonesArray& hits, int& counter, Particle* part)
+void SmearAndSave(TClonesArray& hits, int& counter, Particle* part)
 {
+    //Inserire smearing
+    
     new(hits[counter])MyPoint(part->GetPoint());
-    counter++;
-}
-
-void SaveHit(TClonesArray& hits, int& counter, double x, double y, double z)
-{
-    new(hits[counter])MyPoint(x, y, z);
     counter++;
 }
