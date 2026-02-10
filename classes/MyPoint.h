@@ -7,12 +7,12 @@
 class MyPoint : public TObject
 {
     public:
-        MyPoint():TObject(),fX(0.0),fY(0.0),fZ(0.0),fR(0.0),fPhi(0.0),fTrackID(-1){}
-        MyPoint(double X, double Y, double Z);
-        MyPoint(double X, double Y, double Z, int trackID);
+        MyPoint():TObject(),fZ(0.0),fR(0.0),fPhi(0.0),fTrackID(-1){}
+        MyPoint(double R, double Phi, double Z);
+        MyPoint(double R, double Phi, double Z, int trackID);
 
-        double GetX() const {return fX;}
-        double GetY() const {return fY;}
+        double GetX() const {return fR*cos(fPhi);}
+        double GetY() const {return fR*sin(fPhi);}
         double GetZ() const {return fZ;}
 
         double GetR() const {return fR;}
@@ -21,10 +21,7 @@ class MyPoint : public TObject
         int GetTrackID() const {return fTrackID;}
 
     private:
-        double fX;              // x coordinate
-        double fY;              // y coordinate
         double fZ;              // z coordinate
-
         double fR;              // radial coordinate
         double fPhi;            // azimut angle
 

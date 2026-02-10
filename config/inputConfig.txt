@@ -37,11 +37,13 @@ Length:             27.0
 BeamPipeMaterial:   Be
 LayerMaterial:      Si
 
-
-# ====================  Parametri di ricostruzione  ===================
+# ====================  Parametri di smearing  ========================
 
 SmearZ:             0.012
 SmearRPhi:          0.003
+
+# ====================  Parametri di ricostruzione  ===================
+
 DeltaPhiCut:        0.1
 
 StepSize:           0.01

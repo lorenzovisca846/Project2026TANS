@@ -28,6 +28,9 @@ class SimRandom : public TRandom3 {
 
         double ZDist(double zLen) {return (Rndm()-0.5)*zLen;}
 
+        double ZSmear(double z0, double zS) {return Gaus(z0, zS);}
+        double RPhiSmear(double r, double phi0, double sRPhi) {return Gaus(phi0, sRPhi/r);}
+
     private:
     unsigned int fSeed;
     TH1F* fMultHist;

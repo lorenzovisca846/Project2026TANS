@@ -3,20 +3,14 @@
 
 ClassImp(MyPoint)
 
-MyPoint::MyPoint(double X, double Y, double Z):
+MyPoint::MyPoint(double R, double Phi, double Z):
     TObject(),
-    fX(X),fY(Y),fZ(Z),
+    fR(R),fPhi(Phi),fZ(Z),
     fTrackID(-1)
-{
-    fR = sqrt(X*X + Y*Y);
-    fPhi = atan2(Y,X);
-}
+    {}
 
-MyPoint::MyPoint(double X, double Y, double Z, int trackID):
+MyPoint::MyPoint(double R, double Phi, double Z, int trackID):
     TObject(),
-    fX(X),fY(Y),fZ(Z),
+    fR(R),fPhi(Phi),fZ(Z),
     fTrackID(trackID)
-{
-    fR = sqrt(X*X + Y*Y);
-    fPhi = atan2(Y,X);
-}
+    {}

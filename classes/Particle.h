@@ -3,7 +3,6 @@
 
 #include <TObject.h>
 #include "SimRandom.h"
-#include "MyPoint.h"
 
 class Particle : public TObject
 {
@@ -16,7 +15,9 @@ class Particle : public TObject
         void MultScatter(double X0, double W, double R);
 
         double GetZ() const {return fZ;}
-        MyPoint GetPoint() const {return MyPoint(fX, fY, fZ, fTrackID);}
+        double GetR() const {return sqrt(fX*fX + fY*fY);}
+        double GetPhi() const {return fPhi;}
+        int GetTrackID() const {return fTrackID;}     
     
     private:
         SimRandom* fSimrand;

@@ -13,7 +13,7 @@
 #include "classes/Particle.h"
 #include "classes/MyPoint.h"
 
-#define DISPLAY true
+#define DISPLAY false
 
 using namespace std;
 
@@ -49,8 +49,6 @@ void NoiseP(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray&
 void NoiseF(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
 
 void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, const string& gentypes);
-
-void SmearAndSave(TClonesArray& hits, int& counter, Particle* part);
 
 int main(int argc, char** argv)
 {
@@ -92,6 +90,9 @@ int main(int argc, char** argv)
 
     double l2R          = config->GetValue("Layer2Radius", 7.0);
     double l2L          = config->GetValue("Length", 27.0);
+
+    double sRPhi        = config->GetValue("SmearRPhi", 0.003);
+    double sZ           = config->GetValue("SmearZ", 0.0120);
 
     string bpMat        = config->GetValue("BeamPipeMaterial", "Be");
     string lMat         = config->GetValue("LayerMaterial", "Si");
@@ -220,7 +221,7 @@ int main(int argc, char** argv)
             ptrPart->Init(vertex.X, vertex.Y, vertex.Z, 1.0, 0.7, j);
 
             #if DISPLAY
-                Transport(ptrPart, beamPipe, hitsBP, counterBP, true, msEnabled);
+                Transport(ptrPart, beamPipe, hitsBP, counterBP, true, msEnabled, simrand, sRPhi, sZ);
             #else
                 Transport(ptrPart, beamPipe, hits1, counter1, false, msEnabled);
             #endif
@@ -268,7 +269,10 @@ void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& c
     if(fabs(part->GetZ()) < layer.GetL()*0.5)
     {
         if(detector)
-            SmearAndSave(hits, counter, part);
+        {
+            new(hits[counter])MyPoint(layer.GetR(), part->GetPhi(), part->GetZ(), part->GetTrackID());
+            counter++;
+        }
 
         if(msEnabled)
             part->MultScatter(layer.GetX0(), layer.GetW(), layer.GetR());
@@ -285,10 +289,7 @@ void NoiseU(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray&
         double phiNoise = simrand->PhiDist();
         double zNoise = simrand->ZDist(layer.GetL());
 
-        double xNoise = layer.GetR() * cos(phiNoise);
-        double yNoise = layer.GetR() * sin(phiNoise);
-
-        new(hits[counter])MyPoint(xNoise, yNoise, zNoise);
+        new(hits[counter])MyPoint(layer.GetR(), phiNoise, zNoise);
         counter++;
     }
 }
@@ -302,10 +303,7 @@ void NoiseP(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray&
         double phiNoise = simrand->PhiDist();
         double zNoise = simrand->ZDist(layer.GetL());
 
-        double xNoise = layer.GetR() * cos(phiNoise);
-        double yNoise = layer.GetR() * sin(phiNoise);
-
-        new(hits[counter])MyPoint(xNoise, yNoise, zNoise);
+        new(hits[counter])MyPoint(layer.GetR(), phiNoise, zNoise);
         counter++;
     }
 }
@@ -319,10 +317,7 @@ void NoiseF(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray&
         double phiNoise = simrand->PhiDist();
         double zNoise = simrand->ZDist(layer.GetL());
 
-        double xNoise = layer.GetR() * cos(phiNoise);
-        double yNoise = layer.GetR() * sin(phiNoise);
-
-        new(hits[counter])MyPoint(xNoise, yNoise, zNoise);
+        new(hits[counter])MyPoint(layer.GetR(), phiNoise, zNoise);
         counter++;
     }
 }
@@ -371,12 +366,4 @@ void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, const string& gent
             nptr = &NoiseP;
             break;
     }
-}
-
-void SmearAndSave(TClonesArray& hits, int& counter, Particle* part)
-{
-    //Inserire smearing
-    
-    new(hits[counter])MyPoint(part->GetPoint());
-    counter++;
 }
