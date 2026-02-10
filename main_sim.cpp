@@ -50,6 +50,9 @@ void NoiseF(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray&
 
 void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, const string& gentypes);
 
+void SaveHit(TClonesArray& hits, int& counter, Particle* part);
+void SaveHit(TClonesArray& hits, int& counter, double x, double y, double z);
+
 int main(int argc, char** argv)
 {
 
@@ -373,4 +376,15 @@ void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, const string& gent
             break;
     }
 }
- 
+
+void SaveHit(TClonesArray& hits, int& counter, Particle* part)
+{
+    new(hits[counter])MyPoint(part->GetPoint());
+    counter++;
+}
+
+void SaveHit(TClonesArray& hits, int& counter, double x, double y, double z)
+{
+    new(hits[counter])MyPoint(x, y, z);
+    counter++;
+}
