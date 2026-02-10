@@ -10,8 +10,5 @@
 #pragma link C++ class Particle+;
 #pragma link C++ class SimRandom+;
 #pragma link C++ class Config+;
-#pragma link C++ class Tracklet+;
-#pragma link C++ class Hit+;
-#pragma link C++ class VertexReconstructor+;
 
 #endif

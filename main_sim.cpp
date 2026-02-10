@@ -269,10 +269,7 @@ void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& c
     if(fabs(part->GetZ()) < layer.GetL()*0.5)
     {
         if(detector)
-        {
-            new(hits[counter])MyPoint(part->GetPoint());
-            counter++;
-        }
+            SaveHit(hits, counter, part);
 
         if(msEnabled)
             part->MultScatter(layer.GetX0(), layer.GetW(), layer.GetR());
@@ -292,8 +289,7 @@ void NoiseU(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray&
         double xNoise = layer.GetR() * cos(phiNoise);
         double yNoise = layer.GetR() * sin(phiNoise);
 
-        new(hits[counter])MyPoint(xNoise, yNoise, zNoise);
-        counter++;
+        SaveHit(hits, counter, xNoise, yNoise, zNoise);
     }
 }
 
@@ -309,8 +305,7 @@ void NoiseP(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray&
         double xNoise = layer.GetR() * cos(phiNoise);
         double yNoise = layer.GetR() * sin(phiNoise);
 
-        new(hits[counter])MyPoint(xNoise, yNoise, zNoise);
-        counter++;
+        SaveHit(hits, counter, xNoise, yNoise, zNoise);
     }
 }
 
@@ -326,8 +321,7 @@ void NoiseF(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray&
         double xNoise = layer.GetR() * cos(phiNoise);
         double yNoise = layer.GetR() * sin(phiNoise);
 
-        new(hits[counter])MyPoint(xNoise, yNoise, zNoise);
-        counter++;
+        SaveHit(hits, counter, xNoise, yNoise, zNoise);
     }
 }
 
