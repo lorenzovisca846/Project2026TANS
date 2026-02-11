@@ -29,7 +29,7 @@ class SimRandom : public TRandom3 {
 
         double ZDist(double zLen) {return (Rndm()-0.5)*zLen;}
 
-        void Smear(MyPoint* point, double sigmaZ, double sigmaPhi);
+        void Smear(MyPoint& point, double sigmaZ, double sigmaPhi);
 
     private:
     unsigned int fSeed;

@@ -62,10 +62,11 @@ int SimRandom::NoisePois(double rate, int max)
     return result;
 }
 
-void SimRandom::Smear(MyPoint* point, double sigmaZ, double sigmaPhi)
+void SimRandom::Smear(MyPoint& point, double sigmaZ, double sigmaPhi)
 {
-    double zs = gRandom->Gaus(point->GetZ(), sigmaZ);
-    double ps = gRandom->Gaus(point->GetPhi(), sigmaPhi);
+    double zs = gRandom->Gaus(point.GetZ(), sigmaZ);
+    double ps = gRandom->Gaus(point.GetPhi(), sigmaPhi);
     if(ps < 0) ps += 2*TMath::Pi();
-    point->SetSmeared(zs, ps);
+    point.SetZ(zs);
+    point.SetPhi(ps);
 }

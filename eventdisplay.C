@@ -119,7 +119,6 @@ void event()
         int n_points = hits.size() + 1;
         TPolyLine3D *line = new TPolyLine3D(n_points);
         TPolyMarker3D *markers = new TPolyMarker3D(hits.size());
-        //TPolyMarker3D *smear_markers = new TPolyMarker3D(hits.size());
         
         line->SetPoint(0, vertex.X, vertex.Y, vertex.Z);
         
@@ -130,7 +129,6 @@ void event()
             if(i>0)
             {
                 markers->SetPoint(i, hits[i]->GetX(), hits[i]->GetY(), hits[i]->GetZ());
-                //smear_markers->SetPoint(i, hits[i]->GetXSmeared(), hits[i]->GetYSmeared(), hits[i]->GetZSmeared());
             }
             
         }
@@ -139,10 +137,6 @@ void event()
         markers->SetMarkerSize(0.2);
         markers->SetMarkerColor(kSpring);
 
-        //smear_markers->SetMarkerStyle(20);
-        //smear_markers->SetMarkerSize(0.2);
-        //smear_markers->SetMarkerColor(kBlack);
-
         if (hits.size() < 3)
             line->SetLineColor(kBlue);
         else
@@ -150,7 +144,6 @@ void event()
         line->SetLineWidth(3);
         line->Draw("same");
         markers->Draw("same");
-        //smear_markers->Draw("same");
     }
 
     TPolyMarker3D *noise_markers = new TPolyMarker3D(noise_points.size());

@@ -42,7 +42,7 @@ typedef void (SimRandom::*vtxGen)(double&, double&, double&, double, double);
 typedef int  (SimRandom::*mGen)(int, int);
 typedef void (*nGen)(int, double, const Cylinder&, TClonesArray&, int&, SimRandom*);
 
-void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled, SimRandom* simrand, double sRPhi, double sZ);
+void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled);
 
 void NoiseU(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
 void NoiseP(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
@@ -91,9 +91,6 @@ int main(int argc, char** argv)
     double l2R          = config->GetValue("Layer2Radius", 7.0);
     double l2L          = config->GetValue("Length", 27.0);
 
-    double sRPhi        = config->GetValue("SmearRPhi", 0.003);
-    double sZ           = config->GetValue("SmearZ", 0.0120);
-
     string bpMat        = config->GetValue("BeamPipeMaterial", "Be");
     string lMat         = config->GetValue("LayerMaterial", "Si");
     
@@ -104,9 +101,9 @@ int main(int argc, char** argv)
 
     delete config;
 
-    Cylinder beamPipe(bpR, bpL, bpW, bpMat);
-    Cylinder Layer1(l1R, l1L, l1W, lMat);
-    Cylinder Layer2(l2R, l2L, 0., lMat);
+    Cylinder beamPipe(bpR, bpL, bpW, bpMat, 0);
+    Cylinder Layer1(l1R, l1L, l1W, lMat, 1);
+    Cylinder Layer2(l2R, l2L, 0., lMat, 2);
 
     typedef struct{
         double X, Y, Z;
@@ -222,12 +219,12 @@ int main(int argc, char** argv)
             ptrPart->Init(vertex.X, vertex.Y, vertex.Z, 1.0, 0.7, j);
 
             #if DISPLAY
-                Transport(ptrPart, beamPipe, hitsBP, counterBP, true, msEnabled, simrand, sRPhi, sZ);
+                Transport(ptrPart, beamPipe, hitsBP, counterBP, true, msEnabled);
             #else
-                Transport(ptrPart, beamPipe, hits1, counter1, false, msEnabled, simrand, sRPhi, sZ);
+                Transport(ptrPart, beamPipe, hits1, counter1, false, msEnabled);
             #endif
-            Transport(ptrPart, Layer1, hits1, counter1, true, msEnabled, simrand, sRPhi, sZ);
-            Transport(ptrPart, Layer2, hits2, counter2, true, false, simrand, sRPhi, sZ);
+            Transport(ptrPart, Layer1, hits1, counter1, true, msEnabled);
+            Transport(ptrPart, Layer2, hits2, counter2, true, false);
         }
 
         //================================= Noise generation =================================
@@ -263,7 +260,7 @@ int main(int argc, char** argv)
     return 0;
 }
 
-void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled, SimRandom* simrand, double sRPhi, double sZ)
+void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled)
 {
     part->Propagation(layer.GetR());
 
@@ -272,7 +269,6 @@ void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& c
         if(detector)
         {
             new(hits[counter])MyPoint(layer.GetR(), part->GetPhi(), part->GetZ(), part->GetTrackID());
-            simrand->Smear((MyPoint*)hits[counter], sZ, sRPhi);
             counter++;
         }
 

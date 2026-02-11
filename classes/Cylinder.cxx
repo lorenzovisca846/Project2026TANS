@@ -3,10 +3,11 @@
 
 ClassImp(Cylinder)
 
-Cylinder::Cylinder(double R, double L, double W, const string& Material):
+Cylinder::Cylinder(double R, double L, double W, const string& Material, int layer):
     TObject(),
     fR(R),fL(L),fW(W),
-    fX0(1000.0)
+    fX0(1000.0),
+    fLayer(layer)
 {
     if(Material=="Be")
         fX0 = 35.28;

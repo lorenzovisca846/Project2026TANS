@@ -72,13 +72,45 @@ int main(int argc, char** argv)
     outputTree->Branch("Vertex",&recVertex.Ztrue,"Ztrue/D:Zrec:succes/O:mult/I");
 
 
-    //================================= Reconstruction ==============================?
+    //================================= Reconstruction ==============================
+
+    vector<MyPoint> hitsL1;
+    vector<MyPoint> hitsL2;
+
+    int Nevents = inputTree->GetEntries();
+
+    //================================= Normal reconstruction ==============================
+    for(int i=0; i<Nevents;i++)
+    {
+        inputTree->GetEvent(i);
+
+        int nHitsL1 = ptrhits1->GetEntries();
+        hitsL1.clear();
+        hitsL1.reserve(nHitsL1);
+
+        for(int j=0; j<nHitsL1; j++)
+        {
+            hitsL1.push_back(*(MyPoint*)ptrhits1->At(j));
+            config.MyRandom()->Smear(hitsL1.back(), config.smearZ, config.smearRPhi);
+        }
+
+        int nHitsL2 = ptrhits2->GetEntries();
+        hitsL2.clear();
+        hitsL2.reserve(nHitsL2);
+
+        for(int j=0; j<nHitsL2; j++)
+        {
+            hitsL2.push_back(*(MyPoint*)ptrhits2->At(j));
+            config.MyRandom()->Smear(hitsL2.back(), config.smearZ, config.smearRPhi);
+        }
 
 
 
 
 
 
+        
+    }
 
     inputFile.Close();
     outputFile.Close();

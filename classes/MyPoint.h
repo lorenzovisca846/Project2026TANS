@@ -18,23 +18,15 @@ class MyPoint : public TObject
         double GetR() const {return fR;}
         double GetPhi() const {return fPhi;}
 
-        double GetZSmeared() const {return fZ_smeared;}
-        double GetPhiSmeared() const {return fPhi_smeared;}
-
-        double GetXSmeared() const {return fR*cos(fPhi_smeared);}
-        double GetYSmeared() const {return fR*sin(fPhi_smeared);}
+        void SetPhi(double phi) {fPhi = phi;}
+        void SetZ(double z) {fZ = z;}
 
         int GetTrackID() const {return fTrackID;}
-
-        void SetSmeared(double zs, double phis) {fZ_smeared = zs; fPhi_smeared = phis;}
 
     private:
         double fZ;              // true z coordinate
         double fR;              // radial coordinate
         double fPhi;            // true azimut angle
-
-        double fZ_smeared;      // smeared z coordinate
-        double fPhi_smeared;    // smeared azimut angle
 
         int fTrackID;           // track ID
 
