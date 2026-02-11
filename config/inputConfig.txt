@@ -3,14 +3,13 @@
 Events:             10000
 Generation:         ghp
 MultScattering:     1
-Seed:               67
+Seed:               0
 
 # ====================  Gestione file  ================================
 
 inputName:          inputDistributions.root
 inputHistoMult:     multHist
 inputHistoEta:      etaHist
-outputName:         simulation_output.root
 
 # ====================  Parametri di Molteplicità  ====================
 
@@ -46,5 +45,6 @@ SmearRPhi:          0.003
 
 DeltaPhiCut:        0.1
 
+MetropolisUsed:     false
 StepSize:           0.01
 NSteps:             10000

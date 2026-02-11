@@ -3,6 +3,7 @@
 #include <TRandom3.h>
 #include <TH1F.h>
 #include <TMath.h>
+#include "MyPoint.h"
 
 class SimRandom : public TRandom3 {
 
@@ -28,8 +29,7 @@ class SimRandom : public TRandom3 {
 
         double ZDist(double zLen) {return (Rndm()-0.5)*zLen;}
 
-        double ZSmear(double z0, double zS) {return Gaus(z0, zS);}
-        double RPhiSmear(double r, double phi0, double sRPhi) {return Gaus(phi0, sRPhi/r);}
+        void Smear(MyPoint* point, double sigmaZ, double sigmaPhi);
 
     private:
     unsigned int fSeed;

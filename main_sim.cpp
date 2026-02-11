@@ -42,7 +42,7 @@ typedef void (SimRandom::*vtxGen)(double&, double&, double&, double, double);
 typedef int  (SimRandom::*mGen)(int, int);
 typedef void (*nGen)(int, double, const Cylinder&, TClonesArray&, int&, SimRandom*);
 
-void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled);
+void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled, SimRandom* simrand, double sRPhi, double sZ);
 
 void NoiseU(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
 void NoiseP(int noiseMax, double noiseRate, const Cylinder& layer, TClonesArray& hits, int& counter, SimRandom* simrand);
@@ -102,9 +102,6 @@ int main(int argc, char** argv)
     string inputHM      = config->GetValue("inputHistoMult", "multHist");
     string inputHE      = config->GetValue("inputHistoEta", "etaHist");
 
-    string outputN0     = config->GetValue("outputName", "simulation_output.root");
-    string outputName   = "../outputs/" + outputN0;
-
     delete config;
 
     Cylinder beamPipe(bpR, bpL, bpW, bpMat);
@@ -132,7 +129,11 @@ int main(int argc, char** argv)
     nGen NoiseGen;
     FunctionAssignment(VertGen, MultGen, NoiseGen, gentypes);
 
-    TFile hfile(outputName.c_str(),"RECREATE");
+    #if DISPLAY
+        TFile hfile("../outputs/sim_display.root","RECREATE");
+    #else
+        TFile hfile("../outputs/simulation_output.root","RECREATE");
+    #endif
     TTree *tree = new TTree("Tree_SimOut","Vertex-Hits TTree");
 
     int arrdim = multMax + noiseMax + 3; // safety margin
@@ -223,10 +224,10 @@ int main(int argc, char** argv)
             #if DISPLAY
                 Transport(ptrPart, beamPipe, hitsBP, counterBP, true, msEnabled, simrand, sRPhi, sZ);
             #else
-                Transport(ptrPart, beamPipe, hits1, counter1, false, msEnabled);
+                Transport(ptrPart, beamPipe, hits1, counter1, false, msEnabled, simrand, sRPhi, sZ);
             #endif
-            Transport(ptrPart, Layer1, hits1, counter1, true, msEnabled);
-            Transport(ptrPart, Layer2, hits2, counter2, true, false);
+            Transport(ptrPart, Layer1, hits1, counter1, true, msEnabled, simrand, sRPhi, sZ);
+            Transport(ptrPart, Layer2, hits2, counter2, true, false, simrand, sRPhi, sZ);
         }
 
         //================================= Noise generation =================================
@@ -262,7 +263,7 @@ int main(int argc, char** argv)
     return 0;
 }
 
-void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled)
+void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& counter, bool detector, bool msEnabled, SimRandom* simrand, double sRPhi, double sZ)
 {
     part->Propagation(layer.GetR());
 
@@ -271,6 +272,7 @@ void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& c
         if(detector)
         {
             new(hits[counter])MyPoint(layer.GetR(), part->GetPhi(), part->GetZ(), part->GetTrackID());
+            simrand->Smear((MyPoint*)hits[counter], sZ, sRPhi);
             counter++;
         }
 

@@ -61,3 +61,11 @@ int SimRandom::NoisePois(double rate, int max)
     } while (result>max);
     return result;
 }
+
+void SimRandom::Smear(MyPoint* point, double sigmaZ, double sigmaPhi)
+{
+    double zs = gRandom->Gaus(point->GetZ(), sigmaZ);
+    double ps = gRandom->Gaus(point->GetPhi(), sigmaPhi);
+    if(ps < 0) ps += 2*TMath::Pi();
+    point->SetSmeared(zs, ps);
+}

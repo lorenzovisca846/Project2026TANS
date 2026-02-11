@@ -19,14 +19,18 @@ Config::Config(SimRandom* srnd, TEnv* configEnv):
     multiplicityMin     = configEnv->GetValue("Minimum", 0);
     multiplicityMax     = configEnv->GetValue("Maximum", 60);
     noiseRateLayer      = configEnv->GetValue("NoiseRate", 5.0);
+    noiseMaxLayer       = configEnv->GetValue("MaxNoise", 20);
 
     smearZ              = configEnv->GetValue("SmearZ", 0.0120);
     smearRPhi           = configEnv->GetValue("SmearRPhi", 0.0030);
     
     deltaPhiCut         = configEnv->GetValue("DeltaPhiCut", 0.1);
 
+    MetropolisUsed      = configEnv->GetValue("MetropolisUsed", false);
     metropolisStepSize  = configEnv->GetValue("StepSize", 0.01);
     metropolisNSteps    = configEnv->GetValue("NSteps", 10000);
+
+    inputFileName       = configEnv->GetValue("outputName", "simulation_output.root");
 
     }
 

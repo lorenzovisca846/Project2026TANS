@@ -71,4 +71,5 @@ void Particle::AngleUpdate()
 {
     fTheta = acos(fC3);
     fPhi = atan2(fC2, fC1);
+    if(fPhi < 0) fPhi += 2*TMath::Pi();
 }

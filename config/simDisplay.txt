@@ -10,7 +10,6 @@ Seed:               67
 inputName:          inputDistributions.root
 inputHistoMult:     multHist
 inputHistoEta:      etaHist
-outputName:         sim_display.root
 
 # ====================  Parametri di Molteplicità  ====================
 
@@ -36,3 +35,9 @@ LayerWidth:         0.02
 Length:             27.0
 BeamPipeMaterial:   Be
 LayerMaterial:      Si
+
+# ====================  Parametri di smearing  ========================
+
+SmearZ:             0.012
+SmearRPhi:          0.003
+

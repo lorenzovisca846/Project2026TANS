@@ -33,8 +33,13 @@ class Config : public TObject
 
     int nEvents;
     int multiplicityMin;
-    int multiplicityMax ;
+    int multiplicityMax;
     double noiseRateLayer;
+    int noiseMaxLayer;
+
+    string inputFileName;
+
+    bool MetropolisUsed;
 
     // Parametri per l'algoritmo Metropolis
     double metropolisStepSize;      // cm (dimensione del passo per Metropolis)
@@ -42,6 +47,8 @@ class Config : public TObject
 
     // Taglio per formare i tracklets
     double deltaPhiCut;              // rad (massima differenza in phi per matching hits)
+
+    SimRandom* MyRandom() const {return fSimrand;}
 
     void Print();
 
