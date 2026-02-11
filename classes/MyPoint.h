@@ -28,7 +28,7 @@ class MyPoint : public TObject
         double fR;              // radial coordinate
         double fPhi;            // true azimut angle
 
-        int fTrackID;           // track ID
+        int fTrackID;           // track ID (for event display)
 
     ClassDef(MyPoint,1)
 };

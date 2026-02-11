@@ -16,22 +16,14 @@ public:
     int hit2_idx;               // Indice dell'hit nel vettore hitsLayer2
     double z_intersection;      // Coordinata z dell'intersezione a r=0 [cm]
     double slope;               // Pendenza dz/dr del tracklet
-    double chi2;                // χ² del fit lineare
-    double sigma_z;             // Errore stimato su z_intersection [cm]
     bool valid;                 // true se il tracklet è valido
 
     // Costruttore di default
     Tracklet() : hit1_idx(-1), hit2_idx(-1), z_intersection(0), 
-                 slope(0), chi2(0), sigma_z(0.01), valid(false) {}
-    
-    /**
-     * @brief Calcola il χ² del tracklet
-     * @return Valore del χ²
-     * 
-     * Il χ² misura la bontà del fit lineare tra i due hit.
-     * Valori bassi indicano un buon allineamento.
-     */
-    double CalculateChi2(double smearZ) const;
+                 slope(0), valid(false) {}
+
+    Tracklet(int idx1, int idx2) : hit1_idx(idx1), hit2_idx(idx2), z_intersection(0), 
+                                  slope(0), valid(false) {}
 };
 
 

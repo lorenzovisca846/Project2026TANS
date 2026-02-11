@@ -4,7 +4,7 @@
 #include <TMath.h>
 
 #include "Config.h"
-#include "Hit.h"
+#include "MyPoint.h"
 #include "Tracklet.h"
 #include "SimRandom.h"
 
@@ -33,8 +33,8 @@ class VertexReconstructor
          * - Ordinamento degli hit per φ
          * - Finestra scorrevole per il matching
          */
-        vector<Tracklet> FormTracklets(const vector<Hit>& hitsLayer1, 
-                                       const vector<Hit>& hitsLayer2) const;
+        vector<Tracklet> FormTracklets(const vector<MyPoint>& hitsLayer1, 
+                                       const vector<MyPoint>& hitsLayer2) const;
 
 
 
@@ -76,7 +76,7 @@ class VertexReconstructor
         Config fConfig;      // Configurazione del detector
         SimRandom* fRandom;    // Generatore di numeri casuali
 
-        bool CalculateTrackletIntersection(Tracklet& tracklet, const Hit& hit1, const Hit& hit2) const;
+        bool CalculateTrackletIntersection(Tracklet& tracklet, const MyPoint& hit1, const MyPoint& hit2) const;
 
         /**
          * @brief Stima l'errore sull'intersezione di un tracklet
@@ -90,7 +90,7 @@ class VertexReconstructor
          * 2. Propagazione geometrica (fattore r/Δr)
          * 3. Scattering multiplo (dipendente dall'angolo)
          */
-        double EstimateTrackletError(const Tracklet& tracklet, const Hit& hit1, const Hit& hit2) const;
+        double EstimateTrackletError(const Tracklet& tracklet, const MyPoint& hit1, const MyPoint& hit2) const;
 
         /**
          * @brief Calcola il χ² di un tracklet
@@ -103,7 +103,7 @@ class VertexReconstructor
          * Per due punti e due parametri (z0, slope), i gradi di libertà sono 0.
          * Questo calcolo è principalmente per monitoraggio e selezione.
          */
-        double CalculateChi2(const Tracklet& tracklet, const Hit& hit1, const Hit& hit2) const;
+        double CalculateChi2(const Tracklet& tracklet, const MyPoint& hit1, const MyPoint& hit2) const;
 
         /**
          * @brief Calcola la mediana di un vettore

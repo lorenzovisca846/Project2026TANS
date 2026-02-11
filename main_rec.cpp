@@ -7,6 +7,11 @@
 
 #include "classes/Config.h"
 #include "classes/MyPoint.h"
+#include "classes/Tracklet.h"
+
+vector<Tracklet> FormTracklets(const vector<MyPoint>& hitsLayer1, const vector<MyPoint>& hitsLayer2, Config& config);
+
+double DeltaPhi(double phi1, double phi2);
 
 int main(int argc, char** argv)
 {
@@ -27,10 +32,7 @@ int main(int argc, char** argv)
 
     delete configEnv;
 
-
-
     //================================= Input file reading =================================
-
     typedef struct{
         double X, Y, Z;
         int mult;} VTX;
@@ -54,7 +56,6 @@ int main(int argc, char** argv)
     bLayer2->SetAddress(&ptrhits2);
 
     //================================= Output file =================================
-
     typedef struct {
         double Ztrue, Zrec;
         bool succes;
@@ -73,16 +74,15 @@ int main(int argc, char** argv)
 
 
     //================================= Reconstruction ==============================
-
     vector<MyPoint> hitsL1;
     vector<MyPoint> hitsL2;
+    vector<Tracklet> tracklets;
 
     int Nevents = inputTree->GetEntries();
 
-    //================================= Normal reconstruction ==============================
-    for(int i=0; i<Nevents;i++)
+    for(int i_event=0; i_event<Nevents;i_event++)
     {
-        inputTree->GetEvent(i);
+        inputTree->GetEvent(i_event);
 
         int nHitsL1 = ptrhits1->GetEntries();
         hitsL1.clear();
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
         for(int j=0; j<nHitsL1; j++)
         {
             hitsL1.push_back(*(MyPoint*)ptrhits1->At(j));
-            config.MyRandom()->Smear(hitsL1.back(), config.smearZ, config.smearRPhi);
+            config.MyRandom()->Smear(hitsL1.back(), config.smearZ, config.smearRPhi, config.detectorLength);
         }
 
         int nHitsL2 = ptrhits2->GetEntries();
@@ -101,19 +101,65 @@ int main(int argc, char** argv)
         for(int j=0; j<nHitsL2; j++)
         {
             hitsL2.push_back(*(MyPoint*)ptrhits2->At(j));
-            config.MyRandom()->Smear(hitsL2.back(), config.smearZ, config.smearRPhi);
+            config.MyRandom()->Smear(hitsL2.back(), config.smearZ, config.smearRPhi, config.detectorLength);
         }
 
+        //================================= Tracklet construction =================================
+        tracklets.clear();  
+        tracklets = FormTracklets(hitsL1, hitsL2, config);
 
 
 
 
-
-        
     }
 
     inputFile.Close();
     outputFile.Close();
 
     return 0;
+}
+
+vector<Tracklet> FormTracklets(vector<MyPoint>& hitsLayer1, vector<MyPoint>& hitsLayer2, Config& config)
+{
+    vector<Tracklet> tracklets;
+    vector<pair<double, int>> sortedL1, sortedL2;
+
+    sortedL1.reserve(hitsLayer1.size());
+    sortedL2.reserve(hitsLayer2.size());
+    
+    for (int i=0; i<hitsLayer1.size(); i++)
+        sortedL1.emplace_back(hitsLayer1[i].GetPhi(), i);
+    
+    for (int i=0; i<hitsLayer2.size(); i++)
+        sortedL2.emplace_back(hitsLayer2[i].GetPhi(), i);
+
+    sort(sortedL1.begin(), sortedL1.end());
+    sort(sortedL2.begin(), sortedL2.end());
+    
+    for (const auto& [phi1, idx1] : sortedL1)
+    {
+        int j_start = 0;
+
+        while ((j_start < sortedL2.size()) && (DeltaPhi(phi1, sortedL2[j_start].first) > config.deltaPhiCut))
+            j_start++;
+        
+        for (int j = j_start; j < sortedL2.size() && (DeltaPhi(phi1, sortedL2[j].first) < config.deltaPhiCut); j++)
+        {
+            const auto& [phi2, idx2] = sortedL2[j];    
+            Tracklet tracklet(idx1, idx2);
+
+            tracklets.push_back(tracklet);
+        }
+    }
+    return tracklets;
+}
+
+double DeltaPhi(double phi1, double phi2)
+{
+    double dPhi = fabs(phi1 - phi2);
+    
+    if (dPhi > TMath::Pi())
+        dPhi = 2.0 * TMath::Pi() - dPhi;
+
+    return dPhi;
 }

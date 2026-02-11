@@ -2,7 +2,7 @@
 #define METROPOLISVERTEXRECONSTRUCTOR_H
 
 #include "Config.h"
-#include "Hit.h"
+#include "MyPoint.h"
 #include "Tracklet.h"
 #include <vector>
 #include <TRandom3.h>

@@ -7,7 +7,6 @@ Come compilare ed eseguire il codice. Dalla cartella home del progetto:
     cmake ..
     make
 
-A questo punto il programma può essere eseguito dalla cartella build con il comando:
+A questo punto il programma può essere eseguito dalla cartella build con il comando (per la simulazione):
 
-    cd simulation
     ./simulation

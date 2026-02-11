@@ -1,8 +1,8 @@
 #include "VertexReconstructor.h"
 
 
-vector<Tracklet> VertexReconstructor::FormTracklets(const vector<Hit>& hitsLayer1, 
-                                       const vector<Hit>& hitsLayer2) const
+vector<Tracklet> VertexReconstructor::FormTracklets(const vector<MyPoint>& hitsLayer1, 
+                                       const vector<MyPoint>& hitsLayer2) const
 {
     vector<Tracklet> tracklets;
         
@@ -13,13 +13,13 @@ vector<Tracklet> VertexReconstructor::FormTracklets(const vector<Hit>& hitsLayer
     // Layer 1: coppia (φ, indice_originale)
     for (size_t i = 0; i < hitsLayer1.size(); i++)
     {
-        sortedL1.emplace_back(hitsLayer1[i].phi_smeared, i);
+        sortedL1.emplace_back(hitsLayer1[i].GetPhi(), i);
     }
     
     // Layer 2: coppia (φ, indice_originale)
     for (size_t i = 0; i < hitsLayer2.size(); i++)
     {
-        sortedL2.emplace_back(hitsLayer2[i].phi_smeared, i);
+        sortedL2.emplace_back(hitsLayer2[i].GetPhi(), i);
     }
     
     // Ordina per φ (crescente)
@@ -58,12 +58,12 @@ vector<Tracklet> VertexReconstructor::FormTracklets(const vector<Hit>& hitsLayer
             // ----- TAGLIO IN Δφ -----
             if (deltaPhi < fConfig.deltaPhiCut)
             {
-                const Hit& hit1 = hitsLayer1[idx1];
-                const Hit& hit2 = hitsLayer2[idx2];
+                const MyPoint& hit1 = hitsLayer1[idx1];
+                const MyPoint& hit2 = hitsLayer2[idx2];
                 
                 // ----- TAGLIO IN Δz (opzionale) -----
                 // Taglio in differenza di z per ridurre falsi match
-                double deltaZ = fabs(hit1.z_smeared - hit2.z_smeared);
+                double deltaZ = fabs(hit1.GetZ() - hit2.GetZ());
                 double deltaZCut = 10.0 * fConfig.smearZ;  // 10σ
                 if (deltaZ > deltaZCut) continue;
                 
@@ -220,12 +220,12 @@ double VertexReconstructor::ReconstructVertexIterative(const vector<Tracklet>& t
 
 
 
-bool VertexReconstructor::CalculateTrackletIntersection(Tracklet& tracklet, const Hit& hit1, const Hit& hit2) const
+bool VertexReconstructor::CalculateTrackletIntersection(Tracklet& tracklet, const MyPoint& hit1, const MyPoint& hit2) const
 {
-    double r1 = hit1.r;            // Raggio del primo hit
-    double z1 = hit1.z_smeared;    // z del primo hit (con smearing)
-    double r2 = hit2.r;            // Raggio del secondo hit
-    double z2 = hit2.z_smeared;    // z del secondo hit (con smearing)
+    double r1 = hit1.GetR();            // Raggio del primo hit
+    double z1 = hit1.GetZ();    // z del primo hit (con smearing)
+    double r2 = hit2.GetR();            // Raggio del secondo hit
+    double z2 = hit2.GetZ();    // z del secondo hit (con smearing)
     
     // Evita divisione per zero (hit sullo stesso raggio)
     if (fabs(r2 - r1) < 1e-6)
@@ -251,8 +251,8 @@ bool VertexReconstructor::CalculateTrackletIntersection(Tracklet& tracklet, cons
 
 
   double VertexReconstructor::EstimateTrackletError(const Tracklet& tracklet, 
-                                 const Hit& hit1, 
-                                 const Hit& hit2) const
+                                 const MyPoint& hit1, 
+                                 const MyPoint& hit2) const
     {
         // ----- 1. ERRORE BASE DAL DETECTOR -----
         // Risoluzione intrinseca in z (120 μm)
@@ -261,8 +261,8 @@ bool VertexReconstructor::CalculateTrackletIntersection(Tracklet& tracklet, cons
         // ----- 2. PROPAGAZIONE GEOMETRICA -----
         // Fattore geometrico: errore cresce quando r1/Δr è grande
         // (estrapolazione lunga → maggiore incertezza)
-        double r1 = hit1.r;
-        double r2 = hit2.r;
+        double r1 = hit1.GetR();
+        double r2 = hit2.GetR();
         double deltaR = r2 - r1;
         
         // Fattore di propagazione: √[1 + (r1/Δr)²]
@@ -271,9 +271,9 @@ bool VertexReconstructor::CalculateTrackletIntersection(Tracklet& tracklet, cons
         // ----- 3. CONTRIBUTO DELLO SCATTERING MULTIPLO -----
         // Calcola l'angolo del tracklet
         double theta = 0.0;
-        if (fabs(hit2.z_smeared - hit1.z_smeared) > 1e-6)
+        if (fabs(hit2.GetZ() - hit1.GetZ()) > 1e-6)
         {
-            theta = atan2(deltaR, fabs(hit2.z_smeared - hit1.z_smeared));
+            theta = atan2(deltaR, fabs(hit2.GetZ() - hit1.GetZ()));
         }
         
         // Errore da scattering: proporzionale a r1/sin(θ)
@@ -297,15 +297,15 @@ bool VertexReconstructor::CalculateTrackletIntersection(Tracklet& tracklet, cons
 
 
     double VertexReconstructor::CalculateChi2(const Tracklet& tracklet, 
-                         const Hit& hit1, 
-                         const Hit& hit2) const
+                         const MyPoint& hit1, 
+                         const MyPoint& hit2) const
     {
         if (!tracklet.valid) return 1e6;
         
-        double r1 = hit1.r;
-        double z1 = hit1.z_smeared;
-        double r2 = hit2.r;
-        double z2 = hit2.z_smeared;
+        double r1 = hit1.GetR();
+        double z1 = hit1.GetZ();
+        double r2 = hit2.GetR();
+        double z2 = hit2.GetZ();
         
         // ----- PREDIZIONI DAL FIT -----
         // Il fit lineare passa esattamente per i due punti,
