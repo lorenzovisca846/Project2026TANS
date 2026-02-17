@@ -7,14 +7,14 @@ Seed:               0
 
 # ====================  Gestione file  ================================
 
-inputName:          inputDistributions.root
-inputHistoMult:     multHist
-inputHistoEta:      etaHist
+inputName:          kinem.root
+inputHistoMult:     hm
+inputHistoEta:      heta2
 
 # ====================  Parametri di Molteplicità  ====================
 
 Minimum:            0
-Maximum:            60
+Maximum:            70
 
 # ====================  Parametri di Rumore  ==========================
 

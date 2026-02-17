@@ -7,9 +7,9 @@ Seed:               67
 
 # ====================  Gestione file  ================================
 
-inputName:          inputDistributions.root
-inputHistoMult:     multHist
-inputHistoEta:      etaHist
+inputName:          kinem.root
+inputHistoMult:     hm
+inputHistoEta:      heta2
 
 # ====================  Parametri di Molteplicità  ====================
 
