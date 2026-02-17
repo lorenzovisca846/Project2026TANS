@@ -24,7 +24,7 @@ Config::Config(SimRandom* srnd, TEnv* configEnv):
     smearZ              = configEnv->GetValue("SmearZ", 0.0120);
     smearRPhi           = configEnv->GetValue("SmearRPhi", 0.0030);
     
-    deltaPhiCut         = configEnv->GetValue("DeltaPhiCut", 0.1);
+    deltaPhiCut         = configEnv->GetValue("DeltaPhiCut", 0.0046875);
 
     MetropolisUsed      = configEnv->GetValue("MetropolisUsed", false);
     metropolisStepSize  = configEnv->GetValue("StepSize", 0.01);

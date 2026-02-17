@@ -1,26 +1,28 @@
 # ====================  Parametri di Simulazione  =====================
 
-Events:             10000
-Generation:         ghp
+Events:             1000000
+Generation:         off
 MultScattering:     1
-Seed:               0
+Seed:               67
 
 # ====================  Gestione file  ================================
 
-inputName:          kinem.root
-inputHistoMult:     hm
-inputHistoEta:      heta2
+inputName:          kinem_DPhi.root
+inputHistoMult:     hMult
+inputHistoEta:      hEta
+
+outputName:         simulation_DPhi.root
 
 # ====================  Parametri di Molteplicità  ====================
 
 Minimum:            0
-Maximum:            70
+Maximum:            1
 
 # ====================  Parametri di Rumore  ==========================
 
-NoiseEnabled:       1
+NoiseEnabled:       0
 MaxNoise:           20
-NoiseRate:          5.0
+NoiseRate:          10.0
 
 # ====================  Parametri Geometrici  =========================
 # (nota) tutte le lunghezze sono espresse in cm

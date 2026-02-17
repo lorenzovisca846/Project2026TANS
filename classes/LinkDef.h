@@ -10,5 +10,6 @@
 #pragma link C++ class Particle+;
 #pragma link C++ class SimRandom+;
 #pragma link C++ class Config+;
+#pragma link C++ class Tracklet+;
 
 #endif

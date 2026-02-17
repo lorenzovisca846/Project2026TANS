@@ -11,6 +11,8 @@ inputName:          kinem.root
 inputHistoMult:     hm
 inputHistoEta:      heta2
 
+outputName:         sim_display.root
+
 # ====================  Parametri di Molteplicità  ====================
 
 Minimum:            0
