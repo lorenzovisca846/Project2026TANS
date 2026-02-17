@@ -58,7 +58,7 @@ int main(int argc, char** argv)
     //================================= Output file =================================
     typedef struct {
         double Ztrue, Zrec;
-        bool succes;
+        bool success;
         int mult;} REC; 
     static REC recVertex;
 
@@ -108,9 +108,28 @@ int main(int argc, char** argv)
         tracklets.clear();  
         tracklets = FormTracklets(hitsL1, hitsL2, config);
 
+        //================================= Vertex reconstruction =================================
+        if(tracklets.size()>0)
+        {
+            recVertex.success = true;
+            recVertex.mult = trueVertex.mult;
+            recVertex.Ztrue = trueVertex.Z;
+            /*
+            ricostruire Zrec
+            */
+            outputTree->Fill();
+        }
+        else
+        {
+            recVertex.success = false;
+            recVertex.mult = 0;
+            recVertex.Ztrue = trueVertex.Z;
+            recVertex.Zrec = 0.;
+            outputTree->Fill();
+        }
 
-
-
+        ptrhits1->Clear();
+        ptrhits2->Clear();
     }
 
     inputFile.Close();
@@ -147,7 +166,7 @@ vector<Tracklet> FormTracklets(vector<MyPoint>& hitsLayer1, vector<MyPoint>& hit
         {
             const auto& [phi2, idx2] = sortedL2[j];    
             Tracklet tracklet(idx1, idx2);
-
+            tracklet.CalculateTrackletIntersection(hitsLayer1[idx1], hitsLayer2[idx2]);
             tracklets.push_back(tracklet);
         }
     }

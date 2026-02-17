@@ -4,6 +4,7 @@ set(LIB_SOURCES
     Particle.cxx
     SimRandom.cxx
     Config.cxx
+    Tracklet.cxx
 )
 
 set(LIB_HEADERS
@@ -12,6 +13,7 @@ set(LIB_HEADERS
     Particle.h
     SimRandom.h
     Config.h
+    Tracklet.h
 )
 
 root_generate_dictionary(G__Classes ${LIB_HEADERS} LINKDEF LinkDef.h)
