@@ -1,0 +1,26 @@
+# ====================  Limiti di molteplicità  =======================
+
+MultiplicityMin:                5
+MultiplicityMax:                10
+
+# ====================  Relazioni visualizzate  =======================
+
+Residuals_all_mult:             true
+Residuals_select_mult:          true
+Residuals_zlim:                 0.1
+
+Efficiency_mult_allZ:           false
+Efficiency_mult_1sigma:         false
+Efficiency_mult_3sigma:         false
+
+Resolution_mult_allZ:           false
+Resolution_mult_1sigma:         false
+Resolution_mult_3sigma:         false
+
+Efficiency_Zvert:               false
+Resolution_Zvert:               false
+
+# ====================  Distribuzioni utilizzate  =====================
+
+ZDist:                          g
+MultDist:                       h

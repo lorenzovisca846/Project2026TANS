@@ -17,5 +17,8 @@ target_link_libraries(simulation ProjectClasses ${ROOT_LIBRARIES})
 add_executable(reconstruction main_reconstruction.cpp)
 target_link_libraries(reconstruction ProjectClasses ${ROOT_LIBRARIES})
 
+add_executable(analysis main_analysis.cpp)
+target_link_libraries(analysis ProjectClasses ${ROOT_LIBRARIES})
+
 #add_executable(acceptance acceptance.cpp)
 #target_link_libraries(acceptance ProjectClasses ${ROOT_LIBRARIES})

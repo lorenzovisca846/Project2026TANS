@@ -1,6 +1,6 @@
 # ====================  Parametri di Simulazione  =====================
 
-Events:             9999
+Events:             1000000
 Generation:         ghp
 MultScattering:     1
 Seed:               0

@@ -68,9 +68,7 @@ int main(int argc, char** argv)
         int mult;} REC; 
     static REC recVertex;
 
-    string outName = "../outputs/reconstruction_output";
-
-    TFile outputFile(outName.c_str(),"RECREATE");
+    TFile outputFile("../outputs/reconstruction_output.root","RECREATE");
 
     TTree *outputTree = new TTree("Tree_RecOut","Reconstruction Tree");
     outputTree->Branch("Vertex",&recVertex.Ztrue,"Ztrue/D:Zrec:success/O:mult/I");
