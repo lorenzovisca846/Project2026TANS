@@ -52,7 +52,6 @@ void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, const string& gent
 
 int main(int argc, char** argv)
 {
-
     //================================= Config parameters =================================
     string cFile = "inputConfig.txt";
     if (argc > 1) cFile = argv[1];

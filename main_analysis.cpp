@@ -7,18 +7,21 @@
 #include <TH2F.h>
 #include <TCanvas.h>
 #include <TStyle.h>
+#include <TF1.h>
+#include <TLatex.h>
+#include <TPaveStats.h>
+#include <TEfficiency.h>
+#include <TGraphAsymmErrors.h>
 #include <string>
 
 using namespace std;
 
-void DisplayHisto(TH1F* histo, string title, string filename)
-{
-    TCanvas *c = new TCanvas(title.c_str(), title.c_str(), 800, 600);
-    histo->Draw("PLE");
-    histo->Fit("gaus", "Q");
-    gStyle->SetOptStat(0001);
-    c->SaveAs(("../outputs/plots" + filename).c_str());
-}
+void DisplayResiduals2D(TH2F* histo, string title, string filename);
+void DisplayResiduals(TH1F* histo, string title, string filename);
+void DisplayResolution(TH1F* histo, string title, string filename);
+void DisplayEfficiency(TEfficiency* eff, string title, string filename);
+
+vector<double> BinForm(char Zdist);
 
 int main(int argc, char** argv)
 {
@@ -28,8 +31,13 @@ int main(int argc, char** argv)
 
     TEnv *config = new TEnv(configFile.c_str());
 
-    int multMin             = config->GetValue("MultiplicityMin",0);
-    int multMax             = config->GetValue("MultiplicityMax",70);
+    int multMin             = config->GetValue("MultiplicityMin",5);
+    int multMax             = config->GetValue("MultiplicityMax",10);
+
+    int multMinGlobal       = config->GetValue("MultiplicityMinGlobal",1);
+    int multMaxGlobal       = config->GetValue("MultiplicityMaxGlobal",70);
+
+    double sigmaZ           = config->GetValue("SigmaZ", 5.3);
 
     bool displayerrfull     = config->GetValue("Residuals_all_mult", false);
     bool displayerrselect   = config->GetValue("Residuals_select_mult", false);
@@ -44,10 +52,12 @@ int main(int argc, char** argv)
     bool displayres3sigma   = config->GetValue("Resolution_mult_3sigma", false);
 
     bool displayeffZvrt     = config->GetValue("Efficiency_Zvert", false);
-    bool displayresZvrt     = config->GetValue("Resolution_Zvert", false);
+    bool displayresZvrt     = config->GetValue("Resolution_Zvert", false);              //WIP
 
     char Zdistribution      = config->GetValue("ZDist", 'g');
     char multdistribution   = config->GetValue("MultDist", 'h');
+
+    if(multdistribution == 'h' || multdistribution == 'H') multMinGlobal = 2;
 
     delete config;
 
@@ -63,31 +73,254 @@ int main(int argc, char** argv)
     TTree *inputTree = (TTree*)inputFile.Get("Tree_RecOut");
     TBranch *bVertex=inputTree->GetBranch("Vertex");
     bVertex->SetAddress(&recVertex.Ztrue);
-
-    string selectedmult = "(" + to_string(multMin) + " < mult < " + to_string(multMax) + ")";
-    int nbinM = multMax - multMin + 1;
-
-
-    TH1F* FullErrHisto = new TH1F("FullErrHisto", "Residuals;Z_{rec}-Z_{true} (cm);Entries", 200, -errZlimit, errZlimit);
-    TH1F* ErrSelectHisto = new TH1F("ErrSelectHisto", ("Residuals " + selectedmult + ";Z_{rec}-Z_{true} (cm);Entries").c_str(), 200, -errZlimit, errZlimit);
-
-    //================================= Analysis ==============================
-
+    
     int Nevents = inputTree->GetEntries();
+
+    string selectedmult = "(" + to_string(multMin) + " #leq Multiplicity #leq " + to_string(multMax) + ")";
+    if(multMin == multMax) selectedmult = "(Multiplicity = " + to_string(multMin) + ")";
+
+    int nbinMG = multMaxGlobal - multMinGlobal + 1;
+
+    TH2F* ErrMultHisto2D    = new TH2F("ErrMultHisto",    "histo;Vertex multiplicity;Z_{rec}-Z_{true}(#mum)", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5, 200, -errZlimit*1e4, errZlimit*1e4);
+    TH2F* ErrMultHisto2D_1s = new TH2F("ErrMultHisto_1s", "histo;Vertex multiplicity;Z_{rec}-Z_{true}(#mum)", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5, 200, -errZlimit*1e4, errZlimit*1e4);
+    TH2F* ErrMultHisto2D_3s = new TH2F("ErrMultHisto_3s", "histo;Vertex multiplicity;Z_{rec}-Z_{true}(#mum)", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5, 200, -errZlimit*1e4, errZlimit*1e4);
+
+
+    TH1F* MultEventsHisto  = new TH1F("MultEventsHisto", "histo;Vertex multiplicity;Efficiency", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5);
+    TH1F* MultSuccessHisto = new TH1F("MultSuccessHisto", "histo;Vertex multiplicity;Efficiency", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5);
+
+    TH1F* MultEventsHisto_1s  = new TH1F("MultEventsHisto_1s", "histo;Vertex multiplicity;Efficiency", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5);
+    TH1F* MultSuccessHisto_1s = new TH1F("MultSuccessHisto_1s", "histo;Vertex multiplicity;Efficiency", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5);
+
+    TH1F* MultEventsHisto_3s  = new TH1F("MultEventsHisto_3s", "histo;Vertex multiplicity;Efficiency", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5);
+    TH1F* MultSuccessHisto_3s = new TH1F("MultSuccessHisto_3s", "histo;Vertex multiplicity;Efficiency", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5);
+
+    vector<double> binEdges = BinForm(Zdistribution);
+
+    int nBinEdges = binEdges.size();
+    double BinEdgesArray[nBinEdges];
+    for(int i = 0; i < nBinEdges; i++)
+        BinEdgesArray[i] = binEdges[i];
+
+    TH2F* ErrZHisto2D = new TH2F("ErrZHisto2D", "histo;Z_{true}(cm);Z_{rec}-Z_{true}(#mum)", nBinEdges-1, BinEdgesArray, 200, -errZlimit*1e4, errZlimit*1e4);
+    TH1F* ZEventsHisto  = new TH1F("ZEventsHisto", "histo;Z_{true}(cm);Efficiency", nBinEdges-1, BinEdgesArray);
+    TH1F* ZSuccessHisto = new TH1F("ZSuccessHisto", "histo;Z_{true}(cm);Efficiency", nBinEdges-1, BinEdgesArray);
+
+
+    // ================================ Loop over events ================================
 
     for(int i_event=0; i_event<Nevents; i_event++)
     {
+        if(i_event%10000 == 0) cout << "Simulating event " << i_event << "/" << Nevents << endl;
         inputTree->GetEntry(i_event);
-        
-        FullErrHisto->Fill(recVertex.Zrec - recVertex.Ztrue);
-        if(recVertex.mult > multMin && recVertex.mult < multMax)
-            ErrSelectHisto->Fill(recVertex.Zrec - recVertex.Ztrue);
-    
+        MultEventsHisto->Fill(recVertex.mult);
+        ZEventsHisto->Fill(recVertex.Ztrue);
+
+        if(abs(recVertex.Ztrue) < sigmaZ) MultEventsHisto_1s->Fill(recVertex.mult);
+        if(abs(recVertex.Ztrue) < 3*sigmaZ) MultEventsHisto_3s->Fill(recVertex.mult);
+
+        if(recVertex.success)
+        {
+            ErrMultHisto2D->Fill(recVertex.mult, (recVertex.Zrec - recVertex.Ztrue)*1e4);
+            if(abs(recVertex.Ztrue) < sigmaZ) ErrMultHisto2D_1s->Fill(recVertex.mult, (recVertex.Zrec - recVertex.Ztrue)*1e4);
+            if(abs(recVertex.Ztrue) < 3*sigmaZ) ErrMultHisto2D_3s->Fill(recVertex.mult, (recVertex.Zrec - recVertex.Ztrue)*1e4);
+
+            MultSuccessHisto->Fill(recVertex.mult);
+            if(abs(recVertex.Ztrue) < sigmaZ) MultSuccessHisto_1s->Fill(recVertex.mult);
+            if(abs(recVertex.Ztrue) < 3*sigmaZ) MultSuccessHisto_3s->Fill(recVertex.mult);
+
+            ErrZHisto2D->Fill(recVertex.Ztrue, (recVertex.Zrec - recVertex.Ztrue)*1e4);
+            ZSuccessHisto->Fill(recVertex.Ztrue);
+        }
     }
 
-    if(displayerrfull)  DisplayHisto(FullErrHisto, "Residuals", "residuals_full_mult.png");
-    if(displayerrselect) DisplayHisto(ErrSelectHisto, ("Residuals " + selectedmult).c_str(), "residuals_select_mult.png");
+    int binMin = ErrMultHisto2D->GetXaxis()->FindBin(multMin);
+    int binMax = ErrMultHisto2D->GetXaxis()->FindBin(multMax);
+
+    TH1F* ErrMultHistoFull      = (TH1F*)ErrMultHisto2D->ProjectionY("ErrMultHistoFull");
+    ErrMultHistoFull->SetTitle("Residuals");
+    ErrMultHistoFull->GetYaxis()->SetTitle("Entries");
+    TH1F* ErrMultHistoSelect    = (TH1F*)ErrMultHisto2D->ProjectionY("ErrMultHistoSelect", binMin, binMax);
+    ErrMultHistoSelect->SetTitle(("Residuals " + selectedmult).c_str());
+    ErrMultHistoSelect->GetYaxis()->SetTitle("Entries");
+
+    // ================================ Residuals vs multiplicity ================================
+
+    if(displayerrfull)   DisplayResiduals(ErrMultHistoFull, "Residuals", "residuals_vs_mult_full.png");
+    if(displayerrselect) DisplayResiduals(ErrMultHistoSelect, ("Residuals " + selectedmult).c_str(), "residuals_vs_mult_selected.png");
+
+
+    if(displayerrfull)   DisplayResiduals2D(ErrMultHisto2D, "Residuals vs Vertex multiplicity", "residuals2D.png");
+    if(displayerrfull)   DisplayResiduals2D(ErrMultHisto2D_1s, "Residuals vs Vertex multiplicity #left(#left|Z_{true}#right|<#sigma#right)", "residuals2D_1sigma.png");
+    if(displayerrfull)   DisplayResiduals2D(ErrMultHisto2D_3s, "Residuals vs Vertex multiplicity #left(#left|Z_{true}#right|<3#sigma#right)", "residuals2D_3sigma.png");
+
+
+    // ================================ Resolution vs multiplicity ================================
+
+
+    TH1F* ResMultHisto    = new TH1F("ResMultHisto",    "histo;Vertex multiplicity;Resolution (#mum)", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5);
+    TH1F* ResMultHisto_1s = new TH1F("ResMultHisto_1s", "histo;Vertex multiplicity;Resolution (#mum)", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5);
+    TH1F* ResMultHisto_3s = new TH1F("ResMultHisto_3s", "histo;Vertex multiplicity;Resolution (#mum)", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5);
+
+
+    TH1D* slice;
+    for(int i_mult = multMinGlobal; i_mult <= multMaxGlobal; i_mult++)
+    {
+        int targetBin = ErrMultHisto2D->GetXaxis()->FindBin(i_mult);
+        slice = ErrMultHisto2D->ProjectionY(Form("proj_mult_%d", i_mult), targetBin, targetBin);
+        if(slice->GetEntries() > 0)
+        {
+            ResMultHisto->SetBinContent(targetBin, slice->GetRMS());
+            ResMultHisto->SetBinError(targetBin, slice->GetRMSError());
+        }
+
+        slice = ErrMultHisto2D_1s->ProjectionY(Form("proj_mult_1s_%d", i_mult), targetBin, targetBin);
+        if(slice->GetEntries() > 0)
+        {
+            ResMultHisto_1s->SetBinContent(targetBin, slice->GetRMS());
+            ResMultHisto_1s->SetBinError(targetBin, slice->GetRMSError());
+        }
+
+        slice = ErrMultHisto2D_3s->ProjectionY(Form("proj_mult_3s_%d", i_mult), targetBin, targetBin);
+        if(slice->GetEntries() > 0)
+        {
+            ResMultHisto_3s->SetBinContent(targetBin, slice->GetRMS());
+            ResMultHisto_3s->SetBinError(targetBin, slice->GetRMSError());
+        }
+    }
+
+    if(displayresfull)     DisplayResolution(ResMultHisto, "Resolution vs Vertex multiplicity", "resolution_vs_mult.png");
+    if(displayres1sigma)   DisplayResolution(ResMultHisto_1s, "Resolution vs Vertex multiplicity #left(#left|Z_{true}#right|<#sigma#right)", "resolution_vs_mult_1sigma.png");
+    if(displayres3sigma)   DisplayResolution(ResMultHisto_3s, "Resolution vs Vertex multiplicity #left(#left|Z_{true}#right|<3#sigma#right)", "resolution_vs_mult_3sigma.png");
+
+
+
+    // ================================ Efficiency vs multiplicity ================================
+
+
+
+    TEfficiency* effMultHisto = new TEfficiency(*MultSuccessHisto, *MultEventsHisto);
+    TEfficiency* effMultHisto_1s = new TEfficiency(*MultSuccessHisto_1s, *MultEventsHisto_1s);
+    TEfficiency* effMultHisto_3s = new TEfficiency(*MultSuccessHisto_3s, *MultEventsHisto_3s);
+
+    if(displayefffull)     DisplayEfficiency(effMultHisto, "Efficiency vs Vertex multiplicity", "efficiency_vs_mult.png");
+    if(displayeff1sigma)   DisplayEfficiency(effMultHisto_1s, "Efficiency vs Vertex multiplicity #left(#left|Z_{true}#right|<#sigma#right)", "efficiency_vs_mult_1sigma.png");
+    if(displayeff3sigma)   DisplayEfficiency(effMultHisto_3s, "Efficiency vs Vertex multiplicity #left(#left|Z_{true}#right|<3#sigma#right)", "efficiency_vs_mult_3sigma.png");
+
+    // ================================ Efficiency vs Zvert ================================
+
+    TEfficiency* effZHisto = new TEfficiency(*ZSuccessHisto, *ZEventsHisto);
+    if(displayeffZvrt)      DisplayEfficiency(effZHisto, "Efficiency vs Z_{true}", "efficiency_vs_Zvert.png");
+
+    // ================================ Resolution vs Zvert ================================
+
+    if(displayresZvrt) DisplayResiduals2D(ErrZHisto2D, "Residuals vs Z_{true}", "residuals2D_vs_Zvert.png");
 
     inputFile.Close();
     return 0;
+}
+
+void DisplayResiduals2D(TH2F* histo, string title, string filename)
+{
+    TCanvas *c = new TCanvas(title.c_str(), title.c_str(), 1000, 600);
+    histo->SetTitle(title.c_str());
+    histo->Draw("COLZ");
+
+    gStyle->SetOptStat("e");
+    TPaveStats *st = (TPaveStats*)histo->FindObject("stats");
+    st->SetY1NDC(0.92);
+    st->SetY2NDC(0.98);
+
+    c->SaveAs(("../outputs/plots/" + filename).c_str());
+}
+
+void DisplayResiduals(TH1F* histo, string title, string filename)
+{
+    TCanvas *c = new TCanvas(title.c_str(), title.c_str(), 1000, 600);
+    histo->SetMarkerColor(kBlue);
+    histo->SetMarkerStyle(20);
+    histo->SetMarkerSize(0.4);
+    histo->SetTitle(title.c_str());
+    histo->Draw("E1");
+    histo->Fit("gaus", "Q");
+
+    gStyle->SetEndErrorSize(0);
+    gStyle->SetOptStat("e");
+    gStyle->SetOptFit(1100);
+    TPaveStats *st = (TPaveStats*)histo->FindObject("stats");
+    st->SetY1NDC(0.88);
+    st->SetY2NDC(0.98);
+    st->SetX1NDC(0.75);
+    st->SetX2NDC(0.98);
+
+    c->SaveAs(("../outputs/plots/" + filename).c_str());
+}
+
+void DisplayResolution(TH1F* histo, string title, string filename)
+{
+    TCanvas *c = new TCanvas(title.c_str(), title.c_str(), 1000, 600);
+
+    histo->GetYaxis()->SetRange(histo->GetMinimum()*0.8, histo->GetMaximum()*1.2);
+    histo->SetMarkerColor(kBlue);
+    histo->SetMarkerStyle(20);
+    histo->SetMarkerSize(0.4);
+    histo->SetTitle(title.c_str());
+    histo->Draw("E1");
+
+    gStyle->SetEndErrorSize(0);
+    gStyle->SetOptStat(0);
+
+    c->SaveAs(("../outputs/plots/" + filename).c_str());
+}
+
+void DisplayEfficiency(TEfficiency* histo, string title, string filename)
+{
+    TCanvas *c = new TCanvas(title.c_str(), title.c_str(), 1000, 600);
+    histo->SetMarkerColor(kBlue);
+    histo->SetMarkerStyle(20);
+    histo->SetMarkerSize(0.4);
+
+    if(title.find("multiplicity") == string::npos)
+        histo->SetMarkerSize(0.8);
+
+    histo->SetTitle(title.c_str());
+    histo->Draw("E1");
+
+    gStyle->SetEndErrorSize(0);
+    gStyle->SetOptStat(0);
+
+    c->SaveAs(("../outputs/plots/" + filename).c_str());
+}
+
+
+vector<double> BinForm(char Zdist)
+{
+    vector<double> binEdges;
+
+    for(double i = 1.; i <= 5.; i += 0.5)
+    {
+        binEdges.push_back(i);
+        binEdges.push_back(-i);
+    }
+    binEdges.push_back(0.);
+
+    for(double i = 6.; i <= 10.; i += 1.)
+    {
+        binEdges.push_back(i);
+        binEdges.push_back(-i);
+    }
+
+    if(Zdist == 'u' || Zdist == 'U')
+    {
+        for(double i = 12.; i < 18.; i += 2.)
+        {
+            binEdges.push_back(i);
+            binEdges.push_back(-i);
+        }
+    }
+
+
+    sort(binEdges.begin(), binEdges.end());
+
+    return binEdges;
 }

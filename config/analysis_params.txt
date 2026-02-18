@@ -1,7 +1,13 @@
-# ====================  Limiti di molteplicità  =======================
+# ====================  Zoom di molteplicità ==========================
 
-MultiplicityMin:                5
-MultiplicityMax:                10
+MultiplicityMin:                20
+MultiplicityMax:                25
+
+# ====================  Valori utili  =================================
+
+SigmaZ:                         5.3
+MultiplicityMinGlobal:          1
+MultiplicityMaxGlobal:          69
 
 # ====================  Relazioni visualizzate  =======================
 
@@ -9,16 +15,16 @@ Residuals_all_mult:             true
 Residuals_select_mult:          true
 Residuals_zlim:                 0.1
 
-Efficiency_mult_allZ:           false
-Efficiency_mult_1sigma:         false
-Efficiency_mult_3sigma:         false
+Efficiency_mult_allZ:           true
+Efficiency_mult_1sigma:         true
+Efficiency_mult_3sigma:         true
 
-Resolution_mult_allZ:           false
-Resolution_mult_1sigma:         false
-Resolution_mult_3sigma:         false
+Resolution_mult_allZ:           true
+Resolution_mult_1sigma:         true
+Resolution_mult_3sigma:         true
 
-Efficiency_Zvert:               false
-Resolution_Zvert:               false
+Efficiency_Zvert:               true
+Resolution_Zvert:               true
 
 # ====================  Distribuzioni utilizzate  =====================
 

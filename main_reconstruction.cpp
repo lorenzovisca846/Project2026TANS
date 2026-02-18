@@ -120,15 +120,21 @@ int main(int argc, char** argv)
         tracklets = FormTracklets(hitsL1, hitsL2, config);
 
         //================================= Vertex reconstruction =================================
-        if(tracklets.size()>0)
+        if(tracklets.size()<1)
         {
-            recVertex.Zrec = ReconstructVertex(tracklets, recVertex.success, config);
+            recVertex.Zrec = 0.;
+            recVertex.success = false;
+            outputTree->Fill();
+        }
+        else if(tracklets.size() == 1)
+        {
+            recVertex.Zrec = tracklets[0].z_intersection;
+            recVertex.success = true;
             outputTree->Fill();
         }
         else
         {
-            recVertex.Zrec = 0.;
-            recVertex.success = false;
+            recVertex.Zrec = ReconstructVertex(tracklets, recVertex.success, config);
             outputTree->Fill();
         }
 
