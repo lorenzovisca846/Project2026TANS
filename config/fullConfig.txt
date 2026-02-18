@@ -4,6 +4,7 @@ Events:             1000000
 Generation:         ghp
 MultScattering:     1
 Seed:               0
+Zedges_uniform:     25.0
 
 # ====================  Gestione file  ================================
 
@@ -27,7 +28,6 @@ NoiseRate:          5.0
 
 SigmaXY:            0.01
 SigmaZ:             5.3
-Zedges_uniform:     30.0
 BeamPipeRadius:     3.0
 Layer1Radius:       4.0
 Layer2Radius:       7.0

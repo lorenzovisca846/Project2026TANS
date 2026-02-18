@@ -17,27 +17,6 @@
 
 using namespace std;
 
-/*
-====================================================================================
-POSSIBILI SCELTE PER LA GENERAZIONE CASUALE:
-
-1) Vertice:
-    - o         fissa (nell'origine)
-    - u         gaussiana xy e uniforme z
-    - g         gaussiana xyz
-
-2) Molteplicità:
-    - f         fissa (max)
-    - h         da istogramma
-    - u         uniforme
-
-3) Rumore:
-    - p         poissoniano
-    - u         uniforme
-    - f         fisso (rate)
-====================================================================================
-*/
-
 typedef void (SimRandom::*vtxGen)(double&, double&, double&, double, double);
 typedef int  (SimRandom::*mGen)(int, int);
 typedef void (*nGen)(int, double, const Cylinder&, TClonesArray&, int&, SimRandom*);

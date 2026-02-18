@@ -9,7 +9,5 @@ void Tracklet::CalculateTrackletIntersection( const MyPoint& hit1, const MyPoint
     double z2 = hit2.GetZ();    // z del secondo hit (con smearing)
 
     slope = (z2 - z1) / (r2 - r1);
-    
-    // Estrapola a r=0: z = z1 - slope * r1
     z_intersection = z1 - slope * r1;
 }
