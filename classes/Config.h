@@ -39,7 +39,7 @@ class Config : public TObject
 
     string inputFileName;
 
-    double deltaPhiCut;              // rad (massima differenza in phi per matching hits)
+    double deltaPhiCut;
     double runningWindowSize;
 
     SimRandom* MyRandom() const {return fSimrand;}

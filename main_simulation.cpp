@@ -112,7 +112,7 @@ int main(int argc, char** argv)
     TFile hfile(outputName.c_str(),"RECREATE");
     TTree *tree = new TTree("Tree_SimOut","Vertex-Hits TTree");
 
-    int arrdim = multMax + noiseMax + 3; // safety margin
+    int arrdim = multMax + noiseMax + 3;
 
     TClonesArray *ptrhits1 = new TClonesArray("MyPoint",arrdim);
     TClonesArray &hits1 = *ptrhits1;

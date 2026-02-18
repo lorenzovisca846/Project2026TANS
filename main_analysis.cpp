@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     bool displayres3sigma   = config->GetValue("Resolution_mult_3sigma", false);
 
     bool displayeffZvrt     = config->GetValue("Efficiency_Zvert", false);
-    bool displayresZvrt     = config->GetValue("Resolution_Zvert", false);              //WIP
+    bool displayresZvrt     = config->GetValue("Resolution_Zvert", false);
 
     string gentypes         = config->GetValue("Generation", "ghp");
 
@@ -106,10 +106,8 @@ int main(int argc, char** argv)
         cout << "Uniform Z distribution selected: setting Z range to [" << zMin << ", " << zMax << "] cm" << endl;
     }
     int nBinZ = (zMax - zMin) / binW + 1;
-    if(nBinZ % 2 == 0) nBinZ++;             // Forzo un bin centrato in zero   
+    if(nBinZ % 2 == 0) nBinZ++;
     TH2F* ErrZHisto2D = new TH2F("ErrZHisto2D", "histo;Z_{true}(cm);Z_{rec}-Z_{true}(#mum)", nBinZ, zMin-binW/2., zMax+binW/2., 200, -errZlimit*1e4, errZlimit*1e4);
-
-    // ================================ Loop over events ================================
 
     for(int i_event=0; i_event<Nevents; i_event++)
     {
