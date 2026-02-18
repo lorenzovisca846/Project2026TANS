@@ -27,7 +27,7 @@ NoiseRate:          5.0
 
 SigmaXY:            0.01
 SigmaZ:             5.3
-Zedges_uniform:     20.0
+Zedges_uniform:     30.0
 BeamPipeRadius:     3.0
 Layer1Radius:       4.0
 Layer2Radius:       7.0
@@ -46,3 +46,22 @@ SmearRPhi:          0.003
 
 DeltaPhiCut:        0.0046875
 RunningWindowSize:  0.5
+
+# ====================  Relazioni visualizzate  =======================
+
+Residuals_all_mult:             true
+Residuals_select_mult:          true
+Residuals_zlim:                 0.1
+MultZoom_Min                    20
+MultZoom_Max                    25
+
+Efficiency_mult_allZ:           true
+Efficiency_mult_1sigma:         true
+Efficiency_mult_3sigma:         true
+
+Resolution_mult_allZ:           true
+Resolution_mult_1sigma:         true
+Resolution_mult_3sigma:         true
+
+Efficiency_Zvert:               true
+Resolution_Zvert:               true

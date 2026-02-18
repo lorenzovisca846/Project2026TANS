@@ -16,8 +16,8 @@ Config::Config(SimRandom* srnd, TEnv* configEnv):
     vertexZSigma        = configEnv->GetValue("SigmaZ", 5.3);
     vertexXYSigma       = configEnv->GetValue("SigmaXY", 0.01);
     nEvents             = configEnv->GetValue("Events", 10000);
-    multiplicityMin     = configEnv->GetValue("Minimum", 0);
-    multiplicityMax     = configEnv->GetValue("Maximum", 60);
+    multiplicityMin     = configEnv->GetValue("Minimum", 1);
+    multiplicityMax     = configEnv->GetValue("Maximum", 69);
     noiseRateLayer      = configEnv->GetValue("NoiseRate", 5.0);
     noiseMaxLayer       = configEnv->GetValue("MaxNoise", 20);
 

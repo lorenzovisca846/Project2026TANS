@@ -1,13 +1,13 @@
 # ====================  Zoom di molteplicità ==========================
 
-MultiplicityMin:                20
-MultiplicityMax:                25
+MultZoom_Min:                   20
+MultZoom_Max:                   25
 
 # ====================  Valori utili  =================================
 
 SigmaZ:                         5.3
-MultiplicityMinGlobal:          1
-MultiplicityMaxGlobal:          69
+Minimum:                        1
+Maximum:                        69
 
 # ====================  Relazioni visualizzate  =======================
 

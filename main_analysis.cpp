@@ -24,19 +24,20 @@ vector<double> FormBinEdges(TH2F* histo);
 
 int main(int argc, char** argv)
 {
-    string cFile = "analysis_params.txt";
+    string cFile = "fullConfig.txt";
     if (argc > 1) cFile = argv[1];
     string configFile = "../config/" + cFile;
 
     TEnv *config = new TEnv(configFile.c_str());
 
-    int multMin             = config->GetValue("MultiplicityMin",5);
-    int multMax             = config->GetValue("MultiplicityMax",10);
+    int multMin             = config->GetValue("MultZoom_Min",5);
+    int multMax             = config->GetValue("MultZoom_Max",10);
 
-    int multMinGlobal       = config->GetValue("MultiplicityMinGlobal",1);
-    int multMaxGlobal       = config->GetValue("MultiplicityMaxGlobal",70);
+    int multMinGlobal       = config->GetValue("Minimum",1);
+    int multMaxGlobal       = config->GetValue("Maximum",69);
 
     double sigmaZ           = config->GetValue("SigmaZ", 5.3);
+    double unifZedges       = config->GetValue("Zedges_uniform", 5.3);
 
     bool displayerrfull     = config->GetValue("Residuals_all_mult", false);
     bool displayerrselect   = config->GetValue("Residuals_select_mult", false);
@@ -53,10 +54,12 @@ int main(int argc, char** argv)
     bool displayeffZvrt     = config->GetValue("Efficiency_Zvert", false);
     bool displayresZvrt     = config->GetValue("Resolution_Zvert", false);              //WIP
 
-    string Zdistribution      = config->GetValue("ZDist", "g");
-    string multdistribution   = config->GetValue("MultDist", "h");
+    string gentypes         = config->GetValue("Generation", "ghp");
 
-    if(multdistribution == "h" || multdistribution == "H") multMinGlobal = 2;
+    char Zdistribution = (gentypes.length() > 0) ? gentypes[0] : 'g';
+    char multdistribution = (gentypes.length() > 1) ? gentypes[1] : 'h';
+
+    if(multdistribution == 'h' || multdistribution == 'H') multMinGlobal = 2;
 
     delete config;
 
@@ -96,10 +99,10 @@ int main(int argc, char** argv)
     double binW = 0.5;
     double zMin = -15.;
     double zMax = 15.;
-    if(Zdistribution == "u" || Zdistribution == "U")
+    if(Zdistribution == 'u' || Zdistribution == 'U')
     {
-        zMin = -20.;
-        zMax = 20.;
+        zMin = -unifZedges;
+        zMax = unifZedges;
         cout << "Uniform Z distribution selected: setting Z range to [" << zMin << ", " << zMax << "] cm" << endl;
     }
     int nBinZ = (zMax - zMin) / binW + 1;
@@ -143,8 +146,8 @@ int main(int argc, char** argv)
 
     // ================================ Residuals vs multiplicity ================================
 
-    if(displayerrfull)   DisplayResiduals(ErrMultHistoFull, "Residuals", "residuals_vs_mult_full.png");
-    if(displayerrselect) DisplayResiduals(ErrMultHistoSelect, ("Residuals " + selectedmult).c_str(), "residuals_vs_mult_selected.png");
+    if(displayerrfull)   DisplayResiduals(ErrMultHistoFull, "Residuals", "residuals_full.png");
+    if(displayerrselect) DisplayResiduals(ErrMultHistoSelect, ("Residuals " + selectedmult).c_str(), "residuals_selected.png");
 
 
     if(displayerrfull)   DisplayResiduals2D(ErrMultHisto2D, "Residuals vs Vertex multiplicity", "residuals2D_vs_mult.png");

@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 {
 
     //================================= Config parameters =================================
-    string cFile = "inputConfig.txt";
+    string cFile = "fullConfig.txt";
     if (argc > 1) cFile = argv[1];
     string configFile = "../config/" + cFile;
 

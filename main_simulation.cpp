@@ -53,7 +53,7 @@ void FunctionAssignment(vtxGen& vptr, mGen& mptr, nGen& nptr, const string& gent
 int main(int argc, char** argv)
 {
     //================================= Config parameters =================================
-    string cFile = "inputConfig.txt";
+    string cFile = "fullConfig.txt";
     if (argc > 1) cFile = argv[1];
 
     #if DISPLAY
@@ -69,8 +69,8 @@ int main(int argc, char** argv)
     bool msEnabled      = config->GetValue("MultScattering", false);
     unsigned int seed   = config->GetValue("Seed", 0);
 
-    int multMin         = config->GetValue("Minimum", 0);
-    int multMax         = config->GetValue("Maximum", 60);
+    int multMin         = config->GetValue("Minimum", 1);
+    int multMax         = config->GetValue("Maximum", 69);
 
     bool noiseEnabled   = config->GetValue("NoiseEnabled", true);
     int noiseMax        = config->GetValue("MaxNoise", 20);
