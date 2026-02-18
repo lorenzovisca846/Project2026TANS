@@ -204,7 +204,7 @@ int main(int argc, char** argv)
     for(int i=0; i<Nevents; i++)
     {
         //================================= Vertex generation =================================
-        if(i%10000==0) cout << "Processing event " << i << "/" << Nevents << endl;
+        if(i%10000==0) cout << "Simulating event " << i << "/" << Nevents << endl;
         
         vertex.mult = (simrand->*MultGen)(multMin, multMax);
         (simrand->*VertGen)(vertex.X, vertex.Y, vertex.Z, vtxXYsigma, vtxZsigma);

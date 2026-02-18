@@ -39,14 +39,8 @@ class Config : public TObject
 
     string inputFileName;
 
-    bool MetropolisUsed;
-
-    // Parametri per l'algoritmo Metropolis
-    double metropolisStepSize;      // cm (dimensione del passo per Metropolis)
-    int metropolisNSteps;          // Numero di passi per Metropolis
-
-    // Taglio per formare i tracklets
     double deltaPhiCut;              // rad (massima differenza in phi per matching hits)
+    double runningWindowSize;
 
     SimRandom* MyRandom() const {return fSimrand;}
 

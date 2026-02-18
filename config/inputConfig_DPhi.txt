@@ -46,7 +46,4 @@ SmearRPhi:          0.003
 # ====================  Parametri di ricostruzione  ===================
 
 DeltaPhiCut:        0.0046875
-
-MetropolisUsed:     false
-StepSize:           0.01
-NSteps:             10000
+RunningWindowSize:  0.5

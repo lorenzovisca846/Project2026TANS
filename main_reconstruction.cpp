@@ -3,13 +3,19 @@
 #include <iostream>
 #include <TFile.h>
 #include <TTree.h>
+#include <TStopwatch.h>
 #include <string>
+#include <vector>
+#include <algorithm>
 
 #include "classes/Config.h"
 #include "classes/MyPoint.h"
 #include "classes/Tracklet.h"
 
 vector<Tracklet> FormTracklets(const vector<MyPoint>& hitsLayer1, const vector<MyPoint>& hitsLayer2, Config& config);
+
+double ReconstructVertex(const vector<Tracklet>& tracklets, bool& success, Config& config);
+double RunningWindow(const vector<double>& zIntersections, double windowSize, bool& success);
 
 double DeltaPhi(double phi1, double phi2);
 
@@ -63,14 +69,11 @@ int main(int argc, char** argv)
     static REC recVertex;
 
     string outName = "../outputs/reconstruction_output";
-    string metroName = (config.MetropolisUsed) ? "_metropolis" : "";
-    string ext = ".root";
 
-
-    TFile outputFile((outName+metroName+ext).c_str(),"RECREATE");
+    TFile outputFile(outName.c_str(),"RECREATE");
 
     TTree *outputTree = new TTree("Tree_RecOut","Reconstruction Tree");
-    outputTree->Branch("Vertex",&recVertex.Ztrue,"Ztrue/D:Zrec:succes/O:mult/I");
+    outputTree->Branch("Vertex",&recVertex.Ztrue,"Ztrue/D:Zrec:success/O:mult/I");
 
 
     //================================= Reconstruction ==============================
@@ -80,9 +83,19 @@ int main(int argc, char** argv)
 
     int Nevents = inputTree->GetEntries();
 
+    TStopwatch timer;
+    timer.Start();
+
     for(int i_event=0; i_event<Nevents;i_event++)
     {
+        if(i_event % 10000 == 0)
+            cout << "Reconstructing event " << i_event << "/" << Nevents << endl;
+
+
         inputTree->GetEvent(i_event);
+
+        recVertex.mult = trueVertex.mult;
+        recVertex.Ztrue = trueVertex.Z;
 
         int nHitsL1 = ptrhits1->GetEntries();
         hitsL1.clear();
@@ -111,20 +124,13 @@ int main(int argc, char** argv)
         //================================= Vertex reconstruction =================================
         if(tracklets.size()>0)
         {
-            recVertex.success = true;
-            recVertex.mult = trueVertex.mult;
-            recVertex.Ztrue = trueVertex.Z;
-            /*
-            ricostruire Zrec
-            */
+            recVertex.Zrec = ReconstructVertex(tracklets, recVertex.success, config);
             outputTree->Fill();
         }
         else
         {
-            recVertex.success = false;
-            recVertex.mult = 0;
-            recVertex.Ztrue = trueVertex.Z;
             recVertex.Zrec = 0.;
+            recVertex.success = false;
             outputTree->Fill();
         }
 
@@ -132,13 +138,18 @@ int main(int argc, char** argv)
         ptrhits2->Clear();
     }
 
+    timer.Stop(); 
+    timer.Print();
+
+    outputFile.Write();
+
     inputFile.Close();
     outputFile.Close();
 
     return 0;
 }
 
-vector<Tracklet> FormTracklets(vector<MyPoint>& hitsLayer1, vector<MyPoint>& hitsLayer2, Config& config)
+vector<Tracklet> FormTracklets(const vector<MyPoint>& hitsLayer1, const vector<MyPoint>& hitsLayer2, Config& config)
 {
     vector<Tracklet> tracklets;
     vector<pair<double, int>> sortedL1, sortedL2;
@@ -171,6 +182,51 @@ vector<Tracklet> FormTracklets(vector<MyPoint>& hitsLayer1, vector<MyPoint>& hit
         }
     }
     return tracklets;
+}
+
+double ReconstructVertex(const vector<Tracklet>& tracklets, bool& success, Config& config)
+{
+    success = false;
+
+    vector<double> zIntersections;
+    zIntersections.reserve(tracklets.size());
+
+    for(int i=0; i<tracklets.size(); i++)
+        zIntersections.push_back(tracklets[i].z_intersection);
+    sort(zIntersections.begin(), zIntersections.end());
+
+    double Zcenter = RunningWindow(zIntersections, config.runningWindowSize, success);
+
+    return Zcenter;
+}
+
+double RunningWindow(const vector<double>& zIntersections, double windowSize, bool& success)
+{
+    int maxCount = 0;
+    int maxIndex = 0;
+    int right = 0;
+    
+    for(int i=0; i<zIntersections.size(); i++)
+    {
+        double zInit = zIntersections[i];
+        while((right < zIntersections.size()) && (zIntersections[right]-zInit < windowSize))
+            right++;
+
+        if(right-i > maxCount)
+        {
+            maxCount = right-i;
+            maxIndex = i;
+        }
+    }
+
+    success = (maxCount > 1);
+    if (!success) return 0.;
+
+    double Zrec = 0.;
+    for(int i=0;i<maxCount;i++)
+        Zrec += zIntersections[maxIndex + i];
+    
+    return Zrec / maxCount;
 }
 
 double DeltaPhi(double phi1, double phi2)

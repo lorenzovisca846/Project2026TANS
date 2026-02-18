@@ -25,10 +25,7 @@ Config::Config(SimRandom* srnd, TEnv* configEnv):
     smearRPhi           = configEnv->GetValue("SmearRPhi", 0.0030);
     
     deltaPhiCut         = configEnv->GetValue("DeltaPhiCut", 0.0046875);
-
-    MetropolisUsed      = configEnv->GetValue("MetropolisUsed", false);
-    metropolisStepSize  = configEnv->GetValue("StepSize", 0.01);
-    metropolisNSteps    = configEnv->GetValue("NSteps", 10000);
+    runningWindowSize   = configEnv->GetValue("RunningWindowSize", 0.5);
 
     inputFileName       = configEnv->GetValue("outputName", "simulation_output.root");
 
