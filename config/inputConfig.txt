@@ -1,7 +1,7 @@
 # ====================  Parametri di Simulazione  =====================
 
 Events:             1000000
-Generation:         ghp
+Generation:         uhp
 MultScattering:     1
 Seed:               0
 
@@ -27,6 +27,7 @@ NoiseRate:          5.0
 
 SigmaXY:            0.01
 SigmaZ:             5.3
+Zedges_uniform:     20.0
 BeamPipeRadius:     3.0
 Layer1Radius:       4.0
 Layer2Radius:       7.0

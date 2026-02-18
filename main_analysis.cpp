@@ -53,10 +53,10 @@ int main(int argc, char** argv)
     bool displayeffZvrt     = config->GetValue("Efficiency_Zvert", false);
     bool displayresZvrt     = config->GetValue("Resolution_Zvert", false);              //WIP
 
-    char Zdistribution      = config->GetValue("ZDist", 'g');
-    char multdistribution   = config->GetValue("MultDist", 'h');
+    string Zdistribution      = config->GetValue("ZDist", "g");
+    string multdistribution   = config->GetValue("MultDist", "h");
 
-    if(multdistribution == 'h' || multdistribution == 'H') multMinGlobal = 2;
+    if(multdistribution == "h" || multdistribution == "H") multMinGlobal = 2;
 
     delete config;
 
@@ -96,10 +96,11 @@ int main(int argc, char** argv)
     double binW = 0.5;
     double zMin = -15.;
     double zMax = 15.;
-    if(Zdistribution == 'u' || Zdistribution == 'U')
+    if(Zdistribution == "u" || Zdistribution == "U")
     {
         zMin = -20.;
         zMax = 20.;
+        cout << "Uniform Z distribution selected: setting Z range to [" << zMin << ", " << zMax << "] cm" << endl;
     }
     int nBinZ = (zMax - zMin) / binW + 1;
     if(nBinZ % 2 == 0) nBinZ++;             // Forzo un bin centrato in zero   
@@ -192,11 +193,7 @@ int main(int argc, char** argv)
     if(displayres1sigma)   DisplayResolution(ResMultHisto_1s, "Resolution vs Vertex multiplicity #left(#left|Z_{true}#right|<#sigma#right)", "resolution_vs_mult_1sigma.png");
     if(displayres3sigma)   DisplayResolution(ResMultHisto_3s, "Resolution vs Vertex multiplicity #left(#left|Z_{true}#right|<3#sigma#right)", "resolution_vs_mult_3sigma.png");
 
-
-
     // ================================ Efficiency vs multiplicity ================================
-
-
 
     TEfficiency* effMultHisto = new TEfficiency(*MultSuccessHisto, *MultEventsHisto);
     TEfficiency* effMultHisto_1s = new TEfficiency(*MultSuccessHisto_1s, *MultEventsHisto_1s);

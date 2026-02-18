@@ -8,7 +8,8 @@
 class SimRandom : public TRandom3 {
 
     public:
-        SimRandom():TRandom3(0),fSeed(0),fEtaHist(nullptr),fMultHist(nullptr){}
+        SimRandom():TRandom3(0),fSeed(0),fEtaHist(nullptr),fMultHist(nullptr),fZedges(0.0){}
+        SimRandom(unsigned int seed, TH1F* multHist, TH1F* etaHist, double zedges);
         SimRandom(unsigned int seed, TH1F* multHist, TH1F* etaHist);
         SimRandom(unsigned int seed);
 
@@ -35,6 +36,7 @@ class SimRandom : public TRandom3 {
     unsigned int fSeed;
     TH1F* fMultHist;
     TH1F* fEtaHist;
+    double fZedges;
 
     ClassDef(SimRandom,1);
 };

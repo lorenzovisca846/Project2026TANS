@@ -78,6 +78,7 @@ int main(int argc, char** argv)
 
     double vtxXYsigma   = config->GetValue("SigmaXY", 0.01);
     double vtxZsigma    = config->GetValue("SigmaZ", 5.3);
+    double unifZedges   = config->GetValue("Zedges_uniform", 5.3);
 
     double bpR          = config->GetValue("BeamPipeRadius", 3.0);
     double bpL          = config->GetValue("Length", 27.0);
@@ -117,7 +118,7 @@ int main(int argc, char** argv)
     TH1F *etaHist= (TH1F*)inputFile->Get(inputHE.c_str()); 
 
     delete gRandom;
-    SimRandom *simrand = new SimRandom(seed, multHist, etaHist);
+    SimRandom *simrand = new SimRandom(seed, multHist, etaHist, unifZedges);
     gRandom = simrand;
 
     inputFile->Close();

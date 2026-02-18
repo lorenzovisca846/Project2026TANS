@@ -28,5 +28,5 @@ Resolution_Zvert:               true
 
 # ====================  Distribuzioni utilizzate  =====================
 
-ZDist:                          g
+ZDist:                          u
 MultDist:                       h

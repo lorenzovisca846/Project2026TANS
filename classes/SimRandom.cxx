@@ -13,6 +13,17 @@ SimRandom::SimRandom(unsigned int seed, TH1F* multHist, TH1F* etaHist):
     fEtaHist->SetDirectory(nullptr);
 }
 
+SimRandom::SimRandom(unsigned int seed, TH1F* multHist, TH1F* etaHist, double zedges):
+    TRandom3(seed),fSeed(seed),
+    fMultHist(nullptr),fEtaHist(nullptr),fZedges(zedges)
+{
+    fMultHist = (TH1F*)multHist->Clone("fMultHist_Sim");
+    fMultHist->SetDirectory(nullptr);
+    
+    fEtaHist = (TH1F*)etaHist->Clone("fEtaHist_Sim");
+    fEtaHist->SetDirectory(nullptr);
+}
+
 SimRandom::SimRandom(unsigned int seed):
     TRandom3(seed),fSeed(seed),
     fMultHist(nullptr),fEtaHist(nullptr)
@@ -36,7 +47,7 @@ void SimRandom::VertUnif(double& x, double& y, double& z, double xyS, double zS)
 {
     x = Gaus(0., xyS);
     y = Gaus(0., xyS);
-    z = -zS + Rndm()*2.*zS;
+    z = -fZedges + Rndm()*2.*fZedges;
 }
 
 double SimRandom::ThetaDist()
