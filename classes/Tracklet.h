@@ -17,7 +17,7 @@ public:
     int hit1_idx;               // Indice dell'hit nel vettore hitsLayer1
     int hit2_idx;               // Indice dell'hit nel vettore hitsLayer2
     double z_intersection;      // Coordinata z dell'intersezione a r=0 [cm]
-    double slope;               // Pendenza dz/dr del tracklet
+    double slope;               // Pendenza dz/dr della tracklet
 };
 
 

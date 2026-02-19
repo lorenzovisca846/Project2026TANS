@@ -16,10 +16,10 @@
 
 using namespace std;
 
-void DisplayResiduals2D(TH2F* histo, string title, string filename);
-void DisplayResiduals(TH1F* histo, string title, string filename);
-void DisplayResolution(TH1F* histo, string title, string filename);
-void DisplayEfficiency(TEfficiency* eff, string title, string filename);
+void DisplayResiduals2D(TH2F* histo, string title, string filename, TFile& outputFile);
+void DisplayResiduals(TH1F* histo, string title, string filename, TFile& outputFile);
+void DisplayResolution(TH1F* histo, string title, string filename, TFile& outputFile);
+void DisplayEfficiency(TEfficiency* eff, string title, string filename, TFile& outputFile);
 vector<double> FormBinEdges(TH2F* histo);
 
 int main(int argc, char** argv)
@@ -75,6 +75,8 @@ int main(int argc, char** argv)
     TTree *inputTree = (TTree*)inputFile.Get("Tree_RecOut");
     TBranch *bVertex=inputTree->GetBranch("Vertex");
     bVertex->SetAddress(&recVertex.Ztrue);
+
+    TFile outputFile("../outputs/analysis_output.root","RECREATE");
     
     int Nevents = inputTree->GetEntries();
 
@@ -144,13 +146,13 @@ int main(int argc, char** argv)
 
     // ================================ Residuals vs multiplicity ================================
 
-    if(displayerrfull)   DisplayResiduals(ErrMultHistoFull, "Residuals", "residuals_full.png");
-    if(displayerrselect) DisplayResiduals(ErrMultHistoSelect, ("Residuals " + selectedmult).c_str(), "residuals_selected.png");
+    if(displayerrfull)   DisplayResiduals(ErrMultHistoFull, "Residuals", "residuals_full.png", outputFile);
+    if(displayerrselect) DisplayResiduals(ErrMultHistoSelect, ("Residuals " + selectedmult).c_str(), "residuals_selected.png", outputFile);
 
 
-    if(displayerrfull)   DisplayResiduals2D(ErrMultHisto2D, "Residuals vs Vertex multiplicity", "residuals2D_vs_mult.png");
-    if(displayerrfull)   DisplayResiduals2D(ErrMultHisto2D_1s, "Residuals vs Vertex multiplicity #left(#left|Z_{true}#right|<#sigma#right)", "residuals2D_vs_mult_1sigma.png");
-    if(displayerrfull)   DisplayResiduals2D(ErrMultHisto2D_3s, "Residuals vs Vertex multiplicity #left(#left|Z_{true}#right|<3#sigma#right)", "residuals2D_vs_mult_3sigma.png");
+    if(displayerrfull)   DisplayResiduals2D(ErrMultHisto2D, "Residuals vs Vertex multiplicity", "residuals2D_vs_mult.png", outputFile);
+    if(displayerrfull)   DisplayResiduals2D(ErrMultHisto2D_1s, "Residuals vs Vertex multiplicity #left(#left|Z_{true}#right|<#sigma#right)", "residuals2D_vs_mult_1sigma.png", outputFile);
+    if(displayerrfull)   DisplayResiduals2D(ErrMultHisto2D_3s, "Residuals vs Vertex multiplicity #left(#left|Z_{true}#right|<3#sigma#right)", "residuals2D_vs_mult_3sigma.png", outputFile);
 
 
     // ================================ Resolution vs multiplicity ================================
@@ -190,9 +192,9 @@ int main(int argc, char** argv)
         delete slice;
     }
 
-    if(displayresfull)     DisplayResolution(ResMultHisto, "Resolution vs Vertex multiplicity", "resolution_vs_mult.png");
-    if(displayres1sigma)   DisplayResolution(ResMultHisto_1s, "Resolution vs Vertex multiplicity #left(#left|Z_{true}#right|<#sigma#right)", "resolution_vs_mult_1sigma.png");
-    if(displayres3sigma)   DisplayResolution(ResMultHisto_3s, "Resolution vs Vertex multiplicity #left(#left|Z_{true}#right|<3#sigma#right)", "resolution_vs_mult_3sigma.png");
+    if(displayresfull)     DisplayResolution(ResMultHisto, "Resolution vs Vertex multiplicity", "resolution_vs_mult.png", outputFile);
+    if(displayres1sigma)   DisplayResolution(ResMultHisto_1s, "Resolution vs Vertex multiplicity #left(#left|Z_{true}#right|<#sigma#right)", "resolution_vs_mult_1sigma.png", outputFile);
+    if(displayres3sigma)   DisplayResolution(ResMultHisto_3s, "Resolution vs Vertex multiplicity #left(#left|Z_{true}#right|<3#sigma#right)", "resolution_vs_mult_3sigma.png", outputFile);
 
     // ================================ Efficiency vs multiplicity ================================
 
@@ -200,9 +202,9 @@ int main(int argc, char** argv)
     TEfficiency* effMultHisto_1s = new TEfficiency(*MultSuccessHisto_1s, *MultEventsHisto_1s);
     TEfficiency* effMultHisto_3s = new TEfficiency(*MultSuccessHisto_3s, *MultEventsHisto_3s);
 
-    if(displayefffull)     DisplayEfficiency(effMultHisto, "Efficiency vs Vertex multiplicity", "efficiency_vs_mult.png");
-    if(displayeff1sigma)   DisplayEfficiency(effMultHisto_1s, "Efficiency vs Vertex multiplicity #left(#left|Z_{true}#right|<#sigma#right)", "efficiency_vs_mult_1sigma.png");
-    if(displayeff3sigma)   DisplayEfficiency(effMultHisto_3s, "Efficiency vs Vertex multiplicity #left(#left|Z_{true}#right|<3#sigma#right)", "efficiency_vs_mult_3sigma.png");
+    if(displayefffull)     DisplayEfficiency(effMultHisto, "Efficiency vs Vertex multiplicity", "efficiency_vs_mult.png", outputFile);
+    if(displayeff1sigma)   DisplayEfficiency(effMultHisto_1s, "Efficiency vs Vertex multiplicity #left(#left|Z_{true}#right|<#sigma#right)", "efficiency_vs_mult_1sigma.png", outputFile);
+    if(displayeff3sigma)   DisplayEfficiency(effMultHisto_3s, "Efficiency vs Vertex multiplicity #left(#left|Z_{true}#right|<3#sigma#right)", "efficiency_vs_mult_3sigma.png", outputFile);
 
     // ================================ Efficiency vs Zvert ================================
 
@@ -226,7 +228,7 @@ int main(int argc, char** argv)
 
     TEfficiency* effZ = new TEfficiency(*ZSuccessHisto, *ZEventsHisto);
 
-    if(displayeffZvrt) DisplayEfficiency(effZ, "Efficiency vs Z_{true}", "efficiency_vs_Zvert.png");
+    if(displayeffZvrt) DisplayEfficiency(effZ, "Efficiency vs Z_{true}", "efficiency_vs_Zvert.png", outputFile);
 
 
     // ================================ Resolution vs Zvert ================================
@@ -246,14 +248,15 @@ int main(int argc, char** argv)
         delete slice;
     }
 
-    if(displayresZvrt) DisplayResiduals2D(ErrZHisto2D, "Residuals vs Z_{true}", "residuals2D_vs_Zvert.png");
-    if(displayresZvrt) DisplayResolution(ZResHisto, "Resolution vs Z_{true}", "resolution_vs_Zvert.png");
+    if(displayresZvrt) DisplayResiduals2D(ErrZHisto2D, "Residuals vs Z_{true}", "residuals2D_vs_Zvert.png", outputFile);
+    if(displayresZvrt) DisplayResolution(ZResHisto, "Resolution vs Z_{true}", "resolution_vs_Zvert.png", outputFile);
 
     inputFile.Close();
+    outputFile.Close();
     return 0;
 }
 
-void DisplayResiduals2D(TH2F* histo, string title, string filename)
+void DisplayResiduals2D(TH2F* histo, string title, string filename, TFile& outputFile)
 {
     TCanvas *c = new TCanvas(title.c_str(), title.c_str(), 1000, 600);
     histo->SetTitle(title.c_str());
@@ -265,9 +268,11 @@ void DisplayResiduals2D(TH2F* histo, string title, string filename)
     st->SetY2NDC(0.98);
 
     c->SaveAs(("../outputs/plots/" + filename).c_str());
+
+    outputFile.WriteTObject(histo);
 }
 
-void DisplayResiduals(TH1F* histo, string title, string filename)
+void DisplayResiduals(TH1F* histo, string title, string filename, TFile& outputFile)
 {
     TCanvas *c = new TCanvas(title.c_str(), title.c_str(), 1000, 600);
     histo->SetMarkerColor(kBlue);
@@ -287,9 +292,11 @@ void DisplayResiduals(TH1F* histo, string title, string filename)
     st->SetX2NDC(0.98);
 
     c->SaveAs(("../outputs/plots/" + filename).c_str());
+
+    outputFile.WriteTObject(histo);
 }
 
-void DisplayResolution(TH1F* histo, string title, string filename)
+void DisplayResolution(TH1F* histo, string title, string filename, TFile& outputFile)
 {
     TCanvas *c = new TCanvas(title.c_str(), title.c_str(), 1000, 600);
 
@@ -308,9 +315,11 @@ void DisplayResolution(TH1F* histo, string title, string filename)
     gStyle->SetOptStat(0);
 
     c->SaveAs(("../outputs/plots/" + filename).c_str());
+
+    outputFile.WriteTObject(histo);
 }
 
-void DisplayEfficiency(TEfficiency* histo, string title, string filename)
+void DisplayEfficiency(TEfficiency* histo, string title, string filename, TFile& outputFile)
 {
     TCanvas *c = new TCanvas(title.c_str(), title.c_str(), 1000, 600);
     histo->SetMarkerColor(kBlue);
@@ -327,6 +336,8 @@ void DisplayEfficiency(TEfficiency* histo, string title, string filename)
     gStyle->SetOptStat(0);
 
     c->SaveAs(("../outputs/plots/" + filename).c_str());
+
+    outputFile.WriteTObject(histo);
 }
 
 vector<double> FormBinEdges(TH2F* histo)
