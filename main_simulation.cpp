@@ -228,13 +228,7 @@ int main(int argc, char** argv)
     hfile.Write();
     hfile.Close();
 
-    delete ptrPart;
     delete simrand;
-    delete ptrhits1;
-    delete ptrhits2;
-    #if DISPLAY
-        delete ptrhitsBP;
-    #endif
 
     return 0;
 }
