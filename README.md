@@ -2,8 +2,6 @@ QUICK START
 
 Come compilare ed eseguire il codice. Dalla cartella home del progetto:
 
-    mkdir outputs
-    mkdir outputs/plots
     mkdir build
     cd build 
     cmake ..
