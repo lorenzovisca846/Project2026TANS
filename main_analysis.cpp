@@ -113,7 +113,7 @@ int main(int argc, char** argv)
 
     for(int i_event=0; i_event<Nevents; i_event++)
     {
-        if(i_event%10000 == 0) cout << "Simulating event " << i_event << "/" << Nevents << endl;
+        if(i_event%10000 == 0) cout << "Analyzing event " << i_event << "/" << Nevents << endl;
         inputTree->GetEntry(i_event);
         MultEventsHisto->Fill(recVertex.mult);
 
