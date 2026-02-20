@@ -150,6 +150,8 @@ int main(int argc, char** argv)
     inputFile.Close();
     outputFile.Close();
 
+    delete simrand;
+
     return 0;
 }
 
