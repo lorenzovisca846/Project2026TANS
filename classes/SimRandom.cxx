@@ -2,17 +2,6 @@
 
 ClassImp(SimRandom)
 
-SimRandom::SimRandom(unsigned int seed, TH1F* multHist, TH1F* etaHist):
-    TRandom3(seed),fSeed(seed),
-    fMultHist(nullptr),fEtaHist(nullptr)
-{
-    fMultHist = (TH1F*)multHist->Clone("fMultHist_Sim");
-    fMultHist->SetDirectory(nullptr);
-    
-    fEtaHist = (TH1F*)etaHist->Clone("fEtaHist_Sim");
-    fEtaHist->SetDirectory(nullptr);
-}
-
 SimRandom::SimRandom(unsigned int seed, TH1F* multHist, TH1F* etaHist, double zedges):
     TRandom3(seed),fSeed(seed),
     fMultHist(nullptr),fEtaHist(nullptr),fZedges(zedges)

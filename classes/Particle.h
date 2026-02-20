@@ -7,7 +7,6 @@
 class Particle : public TObject
 {
     public:
-        Particle() {}
         Particle(SimRandom* srnd): fSimrand(srnd) {}
 
         void Init(double x, double y, double z, double beta, double p, int trackID);

@@ -8,7 +8,6 @@ using namespace std;
 class Cylinder : public TObject
 {
     public:
-        Cylinder():TObject(),fR(0.0),fL(0.0),fW(0.0),fX0(1000.0),fLayer(-1){}
         Cylinder(double R, double L, double W, const string& Material, int layer);
 
         double GetR() const {return fR;}
