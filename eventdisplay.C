@@ -8,6 +8,7 @@
 #include <TTree.h>
 #include <TClonesArray.h>
 #include <TFile.h>
+#include <TCanvas.h>
 #include <vector>
 #include <map>
 #include <cmath>
@@ -21,17 +22,13 @@ typedef struct{
     double X, Y, Z;
     int mult;} VTX;
 
-void geometry();
-void event();
+
+void sethits(map<int, vector<MyPoint*>>&, vector<MyPoint*>&, TClonesArray*);
 
 void eventdisplay()
 {
-    geometry();
-    event();
-}
+    TCanvas *canvas = new TCanvas();
 
-void geometry()
-{
     TEnv *config = new TEnv("config/simDisplay.txt");
 
     double bpR          = config->GetValue("BeamPipeRadius", 3.0);
@@ -53,11 +50,11 @@ void geometry()
     TGeoMaterial *matVacuum = new TGeoMaterial("Vacuum", 0, 0, 0);
     TGeoMedium *medVacuum = new TGeoMedium("Vacuum", 1, matVacuum);
     
-    double world_size = l2L * 1.1; 
+    double world_size = bpL* 1.4; 
     TGeoVolume *top = geom->MakeBox("TOP", medVacuum, world_size, world_size, world_size);
     geom->SetTopVolume(top);
     
-    TGeoVolume *beampipe = geom->MakeTube("BEAM_PIPE", medVacuum, bpR, bpR + bpW, bpL *1.4 / 2.0);
+    TGeoVolume *beampipe = geom->MakeTube("BEAM_PIPE", medVacuum, bpR, bpR + bpW, bpL * 1.4 / 2.0);
     beampipe->SetLineColor(kGray);
     top->AddNode(beampipe, 1);
     
@@ -72,10 +69,6 @@ void geometry()
     geom->CloseGeometry();
 
     top->Draw("ogl");
-}
-
-void event() 
-{
 
     TFile *InputFile = TFile::Open("outputs/sim_display.root","READ");
     TTree *tree = (TTree*)InputFile->Get("Tree_SimOut");
@@ -93,65 +86,77 @@ void event()
 
     tree->GetEntry(0);
 
-    map<int, vector<MyPoint*>> track_map;
+    map<int, vector<MyPoint*>> hits_map;
     vector<MyPoint*> noise_points;
 
-    auto sort_hits = [&](TClonesArray* array)
-    {
-        if (!array) return;
-        for (int i = 0; i < array->GetEntriesFast(); ++i)
-        {
-            MyPoint* p = (MyPoint*)array->At(i);
-            int tid = p->GetTrackID();
-            if (tid != -1) 
-                track_map[tid].push_back(p);
-            else
-                noise_points.push_back(p);
-        }
-    };
-
-    sort_hits(hits_bp);
-    sort_hits(hits_l1);
-    sort_hits(hits_l2);
-
-    for (auto const& [tid, hits] : track_map)
-    {
-        int n_points = hits.size() + 1;
-        TPolyLine3D *line = new TPolyLine3D(n_points);
-        TPolyMarker3D *markers = new TPolyMarker3D(hits.size());
-        
-        line->SetPoint(0, vertex.X, vertex.Y, vertex.Z);
-        
-        
-        for (size_t i = 0; i < hits.size(); ++i)
-        {
-            line->SetPoint(i + 1, hits[i]->GetX(), hits[i]->GetY(), hits[i]->GetZ());
-            if(i>0)
-            {
-                markers->SetPoint(i, hits[i]->GetX(), hits[i]->GetY(), hits[i]->GetZ());
-            }
-            
-        }
-
-        markers->SetMarkerStyle(20);
-        markers->SetMarkerSize(0.2);
-        markers->SetMarkerColor(kSpring);
-
-        if (hits.size() < 3)
-            line->SetLineColor(kBlue);
-        else
-            line->SetLineColor(kSpring);
-        line->SetLineWidth(3);
-        line->Draw("same");
-        markers->Draw("same");
-    }
+    sethits(hits_map, noise_points, hits_bp);
+    sethits(hits_map, noise_points, hits_l1);
+    sethits(hits_map, noise_points, hits_l2);
 
     TPolyMarker3D *noise_markers = new TPolyMarker3D(noise_points.size());
-    for (size_t i = 0; i < noise_points.size(); ++i)
+    for(int i=0; i<noise_points.size(); i++)
         noise_markers->SetPoint(i,noise_points[i]->GetX(), noise_points[i]->GetY(), noise_points[i]->GetZ());
 
     noise_markers->SetMarkerStyle(20);
     noise_markers->SetMarkerSize(0.2);
     noise_markers->SetMarkerColor(kRed);
     noise_markers->Draw("same");
+
+
+    TPolyMarker3D *markers;
+    TPolyLine3D *line;
+
+    double r;
+
+    for(int i=0;i<vertex.mult; i++)
+    {
+        int Npoints = hits_map[i].size() + 1;
+        line = new TPolyLine3D(Npoints);
+        markers = new TPolyMarker3D(Npoints);
+
+        line->SetPoint(0, vertex.X, vertex.Y, vertex.Z);
+
+        double Nhits = hits_map[i].size();
+
+        int nLayers = 0;
+        for(int j=0;j<Nhits; j++)
+        {
+            line->SetPoint(j+1, hits_map[i][j]->GetX(), hits_map[i][j]->GetY(), hits_map[i][j]->GetZ());
+            
+            r = sqrt(pow(hits_map[i][j]->GetX(),2) + pow(hits_map[i][j]->GetY(),2));
+            if(r>bpR + 0.001)
+            {
+                markers->SetPoint(j, hits_map[i][j]->GetX(), hits_map[i][j]->GetY(), hits_map[i][j]->GetZ());
+                nLayers++;
+            }
+            
+            markers->SetMarkerStyle(20);
+            markers->SetMarkerSize(0.2);
+            markers->SetMarkerColor(kSpring);
+        }
+
+        markers->Draw("same");
+        line->SetLineColor(kSpring);
+        if((Nhits < 2) || (Nhits == 2 && nLayers == 1))
+            line->SetLineColor(kBlue);
+        line->SetLineWidth(3);
+        line->Draw("same");
+    }
+}
+
+void sethits(map<int, vector<MyPoint*>>& hits_map, vector<MyPoint*>& noise_points, TClonesArray* hits)
+{
+    int Nentries = hits->GetEntries();
+    MyPoint* p;
+    int trackid;
+
+    for(int i=0; i<Nentries;i++)
+    {
+        p = (MyPoint*)hits->At(i);
+        trackid = p->GetTrackID();
+        if(trackid == -1)
+            noise_points.push_back(p);
+        else
+            hits_map[trackid].push_back(p);
+    }
 }
