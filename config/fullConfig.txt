@@ -1,7 +1,7 @@
 # ====================  Parametri di Simulazione  =====================
 
 Events:             1000000
-Generation:         uhp
+Generation:         ghp
 MultScattering:     1
 Seed:               0
 Zedges_uniform:     25.0
