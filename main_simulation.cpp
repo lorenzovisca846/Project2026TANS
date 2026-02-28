@@ -102,43 +102,8 @@ int main(int argc, char** argv)
     #endif
 
     //================================= Status print =================================
-    string Vertexstr = "Gauss (default)";
-    string gt = config.gentypes;
-    if(gt.length() > 0)
-    {
-        if(gt[0]=='o' || gt[0]=='O') Vertexstr = "Origin";
-        if(gt[0]=='u' || gt[0]=='U') Vertexstr = "Uniform";
-        if(gt[0]=='g' || gt[0]=='G') Vertexstr = "Gauss";
-    }
 
-    string Multstr = "From Histogram (default)";
-    if(gt.length() > 1)
-    {
-        if(gt[1]=='f' || gt[1]=='F') Multstr = "Fixed";
-        if(gt[1]=='u' || gt[1]=='U') Multstr = "Uniform";
-        if(gt[1]=='h' || gt[1]=='H') Multstr = "From Histogram";
-    }
-
-    string Noisestr = "Poisson (default)";
-    if(gt.length() > 2)
-    {
-        if(gt[2]=='u' || gt[2]=='U') Noisestr = "Uniform";
-        if(gt[2]=='p' || gt[2]=='P') Noisestr = "Poisson";
-        if(gt[2]=='f' || gt[2]=='F') Noisestr = "Fixed";
-    }
-    
-
-    cout << "\n";
-    cout << "=============== Simulation parameters ===============" << endl;
-    cout << "  Number of events:         " << config.nEvents << endl;
-    cout << "  Multiple scattering:      " << (config.msEnabled ? "YES" : "NO") << endl;
-    cout << "  Vertex generation:        " << Vertexstr << endl;
-    cout << "  Multiplicity generation:  " << Multstr << endl;
-    cout << "  Noise enabled:            " << (config.noiseEnabled ? "YES" : "NO") << endl;
-    if(config.noiseEnabled)
-    cout << "  Noise generation:         " << Noisestr << endl;
-    cout << "=====================================================" << endl;
-    cout << "\n";
+    config.Print();
 
     #if DISPLAY
         cout << "================ Display mode enabled ================" << endl;

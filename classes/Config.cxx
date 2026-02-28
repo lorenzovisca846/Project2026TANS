@@ -74,5 +74,6 @@ void Config::Print()
     cout << "  - Eventi: " << nEvents << endl;
     cout << "  - Molteplicita': [" << multiplicityMin << ", " << multiplicityMax << "]" << endl;
     cout << "  - Taglio DeltaPhi: " << deltaPhiCut << " rad" << endl;
+    cout << "  - Generazione: " << gentypes << endl;
     cout << "====================================\n" << endl;
 }
