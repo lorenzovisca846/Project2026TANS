@@ -44,7 +44,7 @@ int main(int argc, char** argv)
         int mult;} VTX;
     static VTX trueVertex;
 
-    int arrdim = config.multiplicityMax + config.noiseMaxLayer + 3;
+    int arrdim = config.GetMultMin() + config.GetNoiseMaxLayer() + 3;
 
     TClonesArray *ptrhits1 = new TClonesArray("MyPoint",arrdim);
     TClonesArray *ptrhits2 = new TClonesArray("MyPoint",arrdim);
@@ -102,7 +102,7 @@ int main(int argc, char** argv)
         for(int j=0; j<nHitsL1; j++)
         {
             hitsL1.push_back(*(MyPoint*)ptrhits1->At(j));
-            config.MyRandom()->Smear(hitsL1.back(), config.smearZ, config.smearRPhi, config.detectorLength);
+            config.MyRandom()->Smear(hitsL1.back(), config.GetSmearZ(), config.GetSmearRPhi(), config.GetDetectorLength());
         }
 
         int nHitsL2 = ptrhits2->GetEntries();
@@ -112,7 +112,7 @@ int main(int argc, char** argv)
         for(int j=0; j<nHitsL2; j++)
         {
             hitsL2.push_back(*(MyPoint*)ptrhits2->At(j));
-            config.MyRandom()->Smear(hitsL2.back(), config.smearZ, config.smearRPhi, config.detectorLength);
+            config.MyRandom()->Smear(hitsL2.back(), config.GetSmearZ(), config.GetSmearRPhi(), config.GetDetectorLength());
         }
 
         //================================= Tracklet construction =================================
@@ -128,7 +128,7 @@ int main(int argc, char** argv)
         }
         else if(tracklets.size() == 1)
         {
-            recVertex.Zrec = tracklets[0].z_intersection;
+            recVertex.Zrec = tracklets[0].GetZIntersection();
             recVertex.success = true;
             outputTree->Fill();
         }
@@ -176,10 +176,10 @@ vector<Tracklet> FormTracklets(const vector<MyPoint>& hitsLayer1, const vector<M
     {
         int j_start = 0;
 
-        while ((j_start < sortedL2.size()) && (DeltaPhi(phi1, sortedL2[j_start].first) > config.deltaPhiCut))
+        while ((j_start < sortedL2.size()) && (DeltaPhi(phi1, sortedL2[j_start].first) > config.GetDeltaPhiCut()))
             j_start++;
         
-        for (int j = j_start; j < sortedL2.size() && (DeltaPhi(phi1, sortedL2[j].first) < config.deltaPhiCut); j++)
+        for (int j = j_start; j < sortedL2.size() && (DeltaPhi(phi1, sortedL2[j].first) < config.GetDeltaPhiCut()); j++)
         {
             const auto& [phi2, idx2] = sortedL2[j];    
             Tracklet tracklet(idx1, idx2);
@@ -198,12 +198,10 @@ double ReconstructVertex(const vector<Tracklet>& tracklets, bool& success, Confi
     zIntersections.reserve(tracklets.size());
 
     for(int i=0; i<tracklets.size(); i++)
-        zIntersections.push_back(tracklets[i].z_intersection);
+        zIntersections.push_back(tracklets[i].GetZIntersection());
     sort(zIntersections.begin(), zIntersections.end());
 
-    double Zcenter = RunningWindow(zIntersections, config.runningWindowSize, success);
-
-    return Zcenter;
+    return RunningWindow(zIntersections, config.GetRunningWindowSize(), success);
 }
 
 double RunningWindow(const vector<double>& zIntersections, double windowSize, bool& success)

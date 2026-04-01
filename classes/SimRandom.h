@@ -25,6 +25,7 @@ class SimRandom : public TRandom3 {
 
         int NoisePois(double rate, int max);
         int NoiseUnif(double rate, int max) {return Integer(max + 1);}
+        int NoiseFixed(double rate, int max) {return max;}
 
         double ZDist(double zLen) {return (Rndm()-0.5)*zLen;}
 

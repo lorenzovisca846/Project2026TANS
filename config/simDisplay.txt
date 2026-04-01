@@ -4,6 +4,7 @@ Events:             1
 Generation:         off
 MultScattering:     1
 Seed:               67
+Zedges_uniform:     25.0
 
 # ====================  Gestione file  ================================
 
