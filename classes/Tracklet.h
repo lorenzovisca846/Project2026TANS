@@ -13,6 +13,9 @@ public:
                                   slope(0){}
     
     void CalculateTrackletIntersection( const MyPoint& hit1, const MyPoint& hit2);
+    double GetZIntersection() const {return z_intersection;}
+
+private:
 
     int hit1_idx;               // Indice dell'hit nel vettore hitsLayer1
     int hit2_idx;               // Indice dell'hit nel vettore hitsLayer2

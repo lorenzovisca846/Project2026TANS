@@ -65,9 +65,9 @@ int main(int argc, char** argv)
 
     delete configEnv;
 
-    Cylinder beamPipe(config.beamPipeRadius, config.detectorLength, config.beamPipeThickness, config.beamPipeMaterial, 0);
-    Cylinder Layer1(config.layer1Radius, config.detectorLength, config.layer1Thickness, config.layerMaterial, 1);
-    Cylinder Layer2(config.layer2Radius, config.detectorLength, 0., config.layerMaterial, 2);
+    Cylinder beamPipe(config.GetBPRadius(), config.GetDetectorLength(), config.GetBPThickness(), config.GetBPMaterial(), 0);
+    Cylinder Layer1(config.GetL1Radius(), config.GetDetectorLength(), config.GetL1Thickness(), config.GetLayerMaterial(), 1);
+    Cylinder Layer2(config.GetL2Radius(), config.GetDetectorLength(), 0., config.GetLayerMaterial(), 2);
 
     typedef struct{
         double X, Y, Z;
@@ -77,13 +77,13 @@ int main(int argc, char** argv)
     vtxGen VertGen;
     mGen MultGen;
     nGen NoiseGen;
-    FunctionAssignment(VertGen, MultGen, NoiseGen, config.gentypes);
+    FunctionAssignment(VertGen, MultGen, NoiseGen, config.GetGenTypes());
 
 
     TFile hfile(outputName.c_str(),"RECREATE");
     TTree *tree = new TTree("Tree_SimOut","Vertex-Hits TTree");
 
-    int arrdim = config.multiplicityMax + config.noiseMaxLayer + 3;
+    int arrdim = config.GetMultMax() + config.GetNoiseMaxLayer() + 3;
 
     TClonesArray *ptrhits1 = new TClonesArray("MyPoint",arrdim);
     TClonesArray &hits1 = *ptrhits1;
@@ -117,13 +117,13 @@ int main(int argc, char** argv)
     TStopwatch timer;
     timer.Start();
 
-    for(int i=0; i<config.nEvents; i++)
+    for(int i=0; i<config.GetNEvents(); i++)
     {
         //================================= Vertex generation =================================
-        if(i%10000==0) cout << "Simulating event " << i << "/" << config.nEvents << endl;
+        if(i%10000==0) cout << "Simulating event " << i << "/" << config.GetNEvents() << endl;
         
-        vertex.mult = (simrand->*MultGen)(config.multiplicityMin, config.multiplicityMax);
-        (simrand->*VertGen)(vertex.X, vertex.Y, vertex.Z, config.vertexXYSigma, config.vertexZSigma);
+        vertex.mult = (simrand->*MultGen)(config.GetMultMin(), config.GetMultMax());
+        (simrand->*VertGen)(vertex.X, vertex.Y, vertex.Z, config.GetVTXXYSigma(), config.GetVTXZSigma());
 
         counter1 = 0;
         counter2 = 0;
@@ -135,16 +135,16 @@ int main(int argc, char** argv)
             ptrPart->Init(vertex.X, vertex.Y, vertex.Z, 1.0, 0.7, j);
 
             #if DISPLAY
-                Transport(ptrPart, beamPipe, hitsBP, counterBP, true, config.msEnabled);
+                Transport(ptrPart, beamPipe, hitsBP, counterBP, true, config.IsMSEnabled());
             #else
-                Transport(ptrPart, beamPipe, hits1, counter1, false, config.msEnabled);
+                Transport(ptrPart, beamPipe, hits1, counter1, false, config.IsMSEnabled());
             #endif
-            Transport(ptrPart, Layer1, hits1, counter1, true, config.msEnabled);
+            Transport(ptrPart, Layer1, hits1, counter1, true, config.IsMSEnabled());
             Transport(ptrPart, Layer2, hits2, counter2, true, false);
         }
 
         //================================= Noise generation =================================
-        if(config.noiseEnabled)
+        if(config.IsNoiseEnabled())
         {
             Noise(Layer1, hits1, counter1, NoiseGen, config);
             Noise(Layer2, hits2, counter2, NoiseGen, config);
@@ -190,7 +190,7 @@ void Transport(Particle* part, const Cylinder& layer, TClonesArray& hits, int& c
 
 void Noise(const Cylinder& layer, TClonesArray& hits, int& counter, nGen& noiseFunc, Config& config)
 {
-    int nNoise = (config.MyRandom()->*noiseFunc)(config.noiseRateLayer, config.noiseMaxLayer);
+    int nNoise = (config.MyRandom()->*noiseFunc)(config.GetNoiseRateLayer(), config.GetNoiseMaxLayer());
 
     for(int i=0;i<nNoise;i++)
     {

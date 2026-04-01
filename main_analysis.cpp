@@ -32,11 +32,11 @@ int main(int argc, char** argv)
     TEnv *configEnv = new TEnv(configFile.c_str());
     Config config(nullptr, configEnv);
 
-    char Zdistribution = (config.gentypes.length() > 0) ? config.gentypes[0] : 'g';
-    char multdistribution = (config.gentypes.length() > 1) ? config.gentypes[1] : 'h';
+    char Zdistribution = (config.GetGenTypes().length() > 0) ? config.GetGenTypes()[0] : 'g';
+    char multdistribution = (config.GetGenTypes().length() > 1) ? config.GetGenTypes()[1] : 'h';
 
-    int multMinGlobal = config.multiplicityMin;
-    int multMaxGlobal = config.multiplicityMax;
+    int multMinGlobal = config.GetMultMin();
+    int multMaxGlobal = config.GetMultMax();
 
     if(multdistribution == 'h' || multdistribution == 'H') multMinGlobal = 2;
 
@@ -59,14 +59,14 @@ int main(int argc, char** argv)
     
     int Nevents = inputTree->GetEntries();
 
-    string selectedmult = "(" + to_string(config.multminZoom) + " #leq Multiplicity #leq " + to_string(config.multmaxZoom) + ")";
-    if(config.multminZoom == config.multmaxZoom) selectedmult = "(Multiplicity = " + to_string(config.multminZoom) + ")";
+    string selectedmult = "(" + to_string(config.GetMultMinZoom()) + " #leq Multiplicity #leq " + to_string(config.GetMultMaxZoom()) + ")";
+    if(config.GetMultMinZoom() == config.GetMultMaxZoom()) selectedmult = "(Multiplicity = " + to_string(config.GetMultMinZoom()) + ")";
 
     int nbinMG = multMaxGlobal - multMinGlobal + 1;
 
-    TH2F* ErrMultHisto2D    = new TH2F("ErrMultHisto",    "histo;Vertex multiplicity;Z_{rec}-Z_{true}(#mum)", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5, 200, -config.errZlimit*1e4, config.errZlimit*1e4);
-    TH2F* ErrMultHisto2D_1s = new TH2F("ErrMultHisto_1s", "histo;Vertex multiplicity;Z_{rec}-Z_{true}(#mum)", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5, 200, -config.errZlimit*1e4, config.errZlimit*1e4);
-    TH2F* ErrMultHisto2D_3s = new TH2F("ErrMultHisto_3s", "histo;Vertex multiplicity;Z_{rec}-Z_{true}(#mum)", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5, 200, -config.errZlimit*1e4, config.errZlimit*1e4);
+    TH2F* ErrMultHisto2D    = new TH2F("ErrMultHisto",    "histo;Vertex multiplicity;Z_{rec}-Z_{true}(#mum)", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5, 200, -config.GetErrZLimit()*1e4, config.GetErrZLimit()*1e4);
+    TH2F* ErrMultHisto2D_1s = new TH2F("ErrMultHisto_1s", "histo;Vertex multiplicity;Z_{rec}-Z_{true}(#mum)", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5, 200, -config.GetErrZLimit()*1e4, config.GetErrZLimit()*1e4);
+    TH2F* ErrMultHisto2D_3s = new TH2F("ErrMultHisto_3s", "histo;Vertex multiplicity;Z_{rec}-Z_{true}(#mum)", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5, 200, -config.GetErrZLimit()*1e4, config.GetErrZLimit()*1e4);
 
     TH1F* MultEventsHisto  = new TH1F("MultEventsHisto", "histo;Vertex multiplicity;Efficiency", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5);
     TH1F* MultSuccessHisto = new TH1F("MultSuccessHisto", "histo;Vertex multiplicity;Efficiency", nbinMG, multMinGlobal-0.5, multMaxGlobal+0.5);
@@ -82,39 +82,40 @@ int main(int argc, char** argv)
     double zMax = 15.;
     if(Zdistribution == 'u' || Zdistribution == 'U')
     {
-        zMin = -config.vertexZedges;
-        zMax = config.vertexZedges;
+        zMin = -config.GetVTXZEdges();
+        zMax = config.GetVTXZEdges();
         cout << "Uniform Z distribution selected: setting Z range to [" << zMin << ", " << zMax << "] cm" << endl;
     }
     int nBinZ = (zMax - zMin) / binW + 1;
     if(nBinZ % 2 == 0) nBinZ++;
-    TH2F* ErrZHisto2D = new TH2F("ErrZHisto2D", "histo;Z_{true}(cm);Z_{rec}-Z_{true}(#mum)", nBinZ, zMin-binW/2., zMax+binW/2., 200, -config.errZlimit*1e4, config.errZlimit*1e4);
+    TH2F* ErrZHisto2D = new TH2F("ErrZHisto2D", "histo;Z_{true}(cm);Z_{rec}-Z_{true}(#mum)", nBinZ, zMin-binW/2., zMax+binW/2., 200, -config.GetErrZLimit()*1e4, config.GetErrZLimit()*1e4);
 
     for(int i_event=0; i_event<Nevents; i_event++)
     {
         if(i_event%10000 == 0) cout << "Analyzing event " << i_event << "/" << Nevents << endl;
         inputTree->GetEntry(i_event);
+
         MultEventsHisto->Fill(recVertex.mult);
 
-        if(abs(recVertex.Ztrue) < config.vertexZSigma) MultEventsHisto_1s->Fill(recVertex.mult);
-        if(abs(recVertex.Ztrue) < 3*config.vertexZSigma) MultEventsHisto_3s->Fill(recVertex.mult);
+        if(abs(recVertex.Ztrue) < config.GetVTXZSigma()) MultEventsHisto_1s->Fill(recVertex.mult);
+        if(abs(recVertex.Ztrue) < 3*config.GetVTXZSigma()) MultEventsHisto_3s->Fill(recVertex.mult);
 
         if(recVertex.success)
         {
             ErrMultHisto2D->Fill(recVertex.mult, (recVertex.Zrec - recVertex.Ztrue)*1e4);
-            if(abs(recVertex.Ztrue) < config.vertexZSigma) ErrMultHisto2D_1s->Fill(recVertex.mult, (recVertex.Zrec - recVertex.Ztrue)*1e4);
-            if(abs(recVertex.Ztrue) < 3*config.vertexZSigma) ErrMultHisto2D_3s->Fill(recVertex.mult, (recVertex.Zrec - recVertex.Ztrue)*1e4);
+            if(abs(recVertex.Ztrue) < config.GetVTXZSigma()) ErrMultHisto2D_1s->Fill(recVertex.mult, (recVertex.Zrec - recVertex.Ztrue)*1e4);
+            if(abs(recVertex.Ztrue) < 3*config.GetVTXZSigma()) ErrMultHisto2D_3s->Fill(recVertex.mult, (recVertex.Zrec - recVertex.Ztrue)*1e4);
 
             MultSuccessHisto->Fill(recVertex.mult);
-            if(abs(recVertex.Ztrue) < config.vertexZSigma) MultSuccessHisto_1s->Fill(recVertex.mult);
-            if(abs(recVertex.Ztrue) < 3*config.vertexZSigma) MultSuccessHisto_3s->Fill(recVertex.mult);
+            if(abs(recVertex.Ztrue) < config.GetVTXZSigma()) MultSuccessHisto_1s->Fill(recVertex.mult);
+            if(abs(recVertex.Ztrue) < 3*config.GetVTXZSigma()) MultSuccessHisto_3s->Fill(recVertex.mult);
 
             ErrZHisto2D->Fill(recVertex.Ztrue, (recVertex.Zrec - recVertex.Ztrue)*1e4);
         }
     }
 
-    int binMin = ErrMultHisto2D->GetXaxis()->FindBin(config.multminZoom);
-    int binMax = ErrMultHisto2D->GetXaxis()->FindBin(config.multmaxZoom);
+    int binMin = ErrMultHisto2D->GetXaxis()->FindBin(config.GetMultMinZoom());
+    int binMax = ErrMultHisto2D->GetXaxis()->FindBin(config.GetMultMaxZoom());
 
     TH1F* ErrMultHistoFull      = (TH1F*)ErrMultHisto2D->ProjectionY("ErrMultHistoFull");
     ErrMultHistoFull->SetTitle("Residuals");
@@ -125,13 +126,13 @@ int main(int argc, char** argv)
 
     // ================================ Residuals vs multiplicity ================================
 
-    if(config.displayerrfull)   DisplayResiduals(ErrMultHistoFull, "Residuals", "residuals_full.png", outputFile);
-    if(config.displayerrselect) DisplayResiduals(ErrMultHistoSelect, ("Residuals " + selectedmult).c_str(), "residuals_selected.png", outputFile);
+    if(config.DisplayErrFull())   DisplayResiduals(ErrMultHistoFull, "Residuals", "residuals_full.png", outputFile);
+    if(config.DisplayErrSelect()) DisplayResiduals(ErrMultHistoSelect, ("Residuals " + selectedmult).c_str(), "residuals_selected.png", outputFile);
 
 
-    if(config.displayerrfull)   DisplayResiduals2D(ErrMultHisto2D, "Residuals vs Vertex multiplicity", "residuals2D_vs_mult.png", outputFile);
-    if(config.displayerrfull)   DisplayResiduals2D(ErrMultHisto2D_1s, "Residuals vs Vertex multiplicity #left(#left|Z_{true}#right|<#sigma#right)", "residuals2D_vs_mult_1sigma.png", outputFile);
-    if(config.displayerrfull)   DisplayResiduals2D(ErrMultHisto2D_3s, "Residuals vs Vertex multiplicity #left(#left|Z_{true}#right|<3#sigma#right)", "residuals2D_vs_mult_3sigma.png", outputFile);
+    if(config.DisplayErrFull())   DisplayResiduals2D(ErrMultHisto2D, "Residuals vs Vertex multiplicity", "residuals2D_vs_mult.png", outputFile);
+    if(config.DisplayErrFull())   DisplayResiduals2D(ErrMultHisto2D_1s, "Residuals vs Vertex multiplicity #left(#left|Z_{true}#right|<#sigma#right)", "residuals2D_vs_mult_1sigma.png", outputFile);
+    if(config.DisplayErrFull())   DisplayResiduals2D(ErrMultHisto2D_3s, "Residuals vs Vertex multiplicity #left(#left|Z_{true}#right|<3#sigma#right)", "residuals2D_vs_mult_3sigma.png", outputFile);
 
 
     // ================================ Resolution vs multiplicity ================================
@@ -171,9 +172,9 @@ int main(int argc, char** argv)
         delete slice;
     }
 
-    if(config.displayresfull)     DisplayResolution(ResMultHisto, "Resolution vs Vertex multiplicity", "resolution_vs_mult.png", outputFile);
-    if(config.displayres1sigma)   DisplayResolution(ResMultHisto_1s, "Resolution vs Vertex multiplicity #left(#left|Z_{true}#right|<#sigma#right)", "resolution_vs_mult_1sigma.png", outputFile);
-    if(config.displayres3sigma)   DisplayResolution(ResMultHisto_3s, "Resolution vs Vertex multiplicity #left(#left|Z_{true}#right|<3#sigma#right)", "resolution_vs_mult_3sigma.png", outputFile);
+    if(config.DisplayResFull())     DisplayResolution(ResMultHisto, "Resolution vs Vertex multiplicity", "resolution_vs_mult.png", outputFile);
+    if(config.DisplayRes1Sigma())   DisplayResolution(ResMultHisto_1s, "Resolution vs Vertex multiplicity #left(#left|Z_{true}#right|<#sigma#right)", "resolution_vs_mult_1sigma.png", outputFile);
+    if(config.DisplayRes3Sigma())   DisplayResolution(ResMultHisto_3s, "Resolution vs Vertex multiplicity #left(#left|Z_{true}#right|<3#sigma#right)", "resolution_vs_mult_3sigma.png", outputFile);
 
     // ================================ Efficiency vs multiplicity ================================
 
@@ -181,9 +182,9 @@ int main(int argc, char** argv)
     TEfficiency* effMultHisto_1s = new TEfficiency(*MultSuccessHisto_1s, *MultEventsHisto_1s);
     TEfficiency* effMultHisto_3s = new TEfficiency(*MultSuccessHisto_3s, *MultEventsHisto_3s);
 
-    if(config.displayefffull)     DisplayEfficiency(effMultHisto, "Efficiency vs Vertex multiplicity", "efficiency_vs_mult.png", outputFile);
-    if(config.displayeff1sigma)   DisplayEfficiency(effMultHisto_1s, "Efficiency vs Vertex multiplicity #left(#left|Z_{true}#right|<#sigma#right)", "efficiency_vs_mult_1sigma.png", outputFile);
-    if(config.displayeff3sigma)   DisplayEfficiency(effMultHisto_3s, "Efficiency vs Vertex multiplicity #left(#left|Z_{true}#right|<3#sigma#right)", "efficiency_vs_mult_3sigma.png", outputFile);
+    if(config.DisplayEffFull())     DisplayEfficiency(effMultHisto, "Efficiency vs Vertex multiplicity", "efficiency_vs_mult.png", outputFile);
+    if(config.DisplayEff1Sigma())   DisplayEfficiency(effMultHisto_1s, "Efficiency vs Vertex multiplicity #left(#left|Z_{true}#right|<#sigma#right)", "efficiency_vs_mult_1sigma.png", outputFile);
+    if(config.DisplayEff3Sigma())   DisplayEfficiency(effMultHisto_3s, "Efficiency vs Vertex multiplicity #left(#left|Z_{true}#right|<3#sigma#right)", "efficiency_vs_mult_3sigma.png", outputFile);
 
     // ================================ Efficiency vs Zvert ================================
 
@@ -207,7 +208,7 @@ int main(int argc, char** argv)
 
     TEfficiency* effZ = new TEfficiency(*ZSuccessHisto, *ZEventsHisto);
 
-    if(config.displayeffZvrt) DisplayEfficiency(effZ, "Efficiency vs Z_{true}", "efficiency_vs_Zvert.png", outputFile);
+    if(config.DisplayEffZvrt()) DisplayEfficiency(effZ, "Efficiency vs Z_{true}", "efficiency_vs_Zvert.png", outputFile);
 
 
     // ================================ Resolution vs Zvert ================================
@@ -227,8 +228,8 @@ int main(int argc, char** argv)
         delete slice;
     }
 
-    if(config.displayresZvrt) DisplayResiduals2D(ErrZHisto2D, "Residuals vs Z_{true}", "residuals2D_vs_Zvert.png", outputFile);
-    if(config.displayresZvrt) DisplayResolution(ZResHisto, "Resolution vs Z_{true}", "resolution_vs_Zvert.png", outputFile);
+    if(config.DisplayResZvrt()) DisplayResiduals2D(ErrZHisto2D, "Residuals vs Z_{true}", "residuals2D_vs_Zvert.png", outputFile);
+    if(config.DisplayResZvrt()) DisplayResolution(ZResHisto, "Resolution vs Z_{true}", "resolution_vs_Zvert.png", outputFile);
 
     inputFile.Close();
     outputFile.Close();

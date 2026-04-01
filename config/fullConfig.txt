@@ -44,7 +44,7 @@ SmearRPhi:          0.003
 
 # ====================  Parametri di ricostruzione  ===================
 
-DeltaPhiCut:        0.0046875
+DeltaPhiCut:        0.005
 RunningWindowSize:  0.5
 
 # ====================  Relazioni visualizzate  =======================
